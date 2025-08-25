@@ -125,7 +125,7 @@ export function SearchResult({ result, onLinkPress, onImageLoad, onImageError }:
     {
       symbolName: result.name,
       symbolDescription: result.description,
-      category: 'ancient symbols' // Default to ancient symbols for better results
+      category: 'ancient symbols' // Use ancient symbols for Eye of Horus and similar symbols
     },
     {
       enabled: true, // Always enabled to get curated results
