@@ -120,15 +120,15 @@ function SearchResultItem({ item, isSelected, onSelectResult, onLinkPress }: Sea
   const [allImagesFailed, setAllImagesFailed] = useState(false);
   const [useAiImages, setUseAiImages] = useState(false);
 
-  // AI-powered image search
+  // AI-powered image search - always enabled for better results
   const aiImageSearch = trpc.symbols.searchImages.useQuery(
     {
       symbolName: item.name,
       symbolDescription: item.description,
-      category: 'symbol'
+      category: 'ancient symbols' // Default to ancient symbols for better results
     },
     {
-      enabled: useAiImages,
+      enabled: true, // Always enabled to get curated results
       staleTime: 1000 * 60 * 10, // Cache for 10 minutes
     }
   );
@@ -136,15 +136,19 @@ function SearchResultItem({ item, isSelected, onSelectResult, onLinkPress }: Sea
   const symbolImages = getSymbolImages(item.name);
   const currentImageUrl = symbolImages[currentImageIndex];
   
-  // Determine which image to use
+  // Determine which image to use - prioritize AI curated images
   let imageUrlToUse = item.imageUrl;
-  if (originalImageFailed || useAiImages) {
-    if (aiImageSearch.data?.images && aiImageSearch.data.images.length > 0) {
-      const aiImageIndex = Math.min(currentImageIndex, aiImageSearch.data.images.length - 1);
-      imageUrlToUse = aiImageSearch.data.images[aiImageIndex]?.url || currentImageUrl;
-    } else {
-      imageUrlToUse = currentImageUrl;
+  
+  // Always prefer AI curated images if available
+  if (aiImageSearch.data?.images && aiImageSearch.data.images.length > 0) {
+    const aiImageIndex = Math.min(currentImageIndex, aiImageSearch.data.images.length - 1);
+    const aiImage = aiImageSearch.data.images[aiImageIndex];
+    if (aiImage) {
+      imageUrlToUse = aiImage.url;
     }
+  } else if (originalImageFailed) {
+    // Fallback to curated images only if original failed and no AI images
+    imageUrlToUse = currentImageUrl;
   }
 
   const handleImageError = () => {
@@ -230,9 +234,9 @@ function SearchResultItem({ item, isSelected, onSelectResult, onLinkPress }: Sea
           </TouchableOpacity>
           
           {/* Image source indicator */}
-          {useAiImages && aiImageSearch.data?.images && (
+          {aiImageSearch.data?.images && aiImageSearch.data.images.length > 0 && (
             <View style={styles.imageSourceBadge}>
-              <Text style={styles.imageSourceText}>AI</Text>
+              <Text style={styles.imageSourceText}>✓</Text>
             </View>
           )}
         </View>

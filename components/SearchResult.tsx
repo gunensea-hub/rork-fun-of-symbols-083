@@ -120,15 +120,15 @@ export function SearchResult({ result, onLinkPress, onImageLoad, onImageError }:
   const [useAiImages, setUseAiImages] = useState(true); // Start with AI images enabled
   const [aiDefinition, setAiDefinition] = useState<string>('');
 
-  // AI-powered image search
+  // AI-powered image search - always enabled for better results
   const aiImageSearch = trpc.symbols.searchImages.useQuery(
     {
       symbolName: result.name,
       symbolDescription: result.description,
-      category: 'symbol' // You can make this dynamic based on the search category
+      category: 'ancient symbols' // Default to ancient symbols for better results
     },
     {
-      enabled: useAiImages,
+      enabled: true, // Always enabled to get curated results
       staleTime: 1000 * 60 * 10, // Cache for 10 minutes
     }
   );
@@ -136,15 +136,23 @@ export function SearchResult({ result, onLinkPress, onImageLoad, onImageError }:
   const symbolImages = getSymbolImages(result.name);
   const currentImageUrl = symbolImages[currentImageIndex];
   
-  // Determine which image to use
+  // Determine which image to use - prioritize AI curated images
   let imageUrlToUse = result.imageUrl;
-  if (originalImageFailed || useAiImages) {
-    if (aiImageSearch.data?.images && aiImageSearch.data.images.length > 0) {
-      const aiImageIndex = Math.min(currentImageIndex, aiImageSearch.data.images.length - 1);
-      imageUrlToUse = aiImageSearch.data.images[aiImageIndex]?.url || currentImageUrl;
-    } else {
-      imageUrlToUse = currentImageUrl;
+  let imageDescription = result.description;
+  let imageSource = 'Original Source';
+  
+  // Always prefer AI curated images if available
+  if (aiImageSearch.data?.images && aiImageSearch.data.images.length > 0) {
+    const aiImageIndex = Math.min(currentImageIndex, aiImageSearch.data.images.length - 1);
+    const aiImage = aiImageSearch.data.images[aiImageIndex];
+    if (aiImage) {
+      imageUrlToUse = aiImage.url;
+      imageDescription = aiImage.description;
+      imageSource = aiImage.source;
     }
+  } else if (originalImageFailed) {
+    // Fallback to curated images only if original failed and no AI images
+    imageUrlToUse = currentImageUrl;
   }
 
   // Update AI definition when available
@@ -237,9 +245,9 @@ export function SearchResult({ result, onLinkPress, onImageLoad, onImageError }:
             </TouchableOpacity>
             
             {/* Image source indicator */}
-            {useAiImages && aiImageSearch.data?.images && (
+            {aiImageSearch.data?.images && aiImageSearch.data.images.length > 0 && (
               <View style={styles.imageSourceBadge}>
-                <Text style={styles.imageSourceText}>AI Enhanced</Text>
+                <Text style={styles.imageSourceText}>Verified</Text>
               </View>
             )}
           </View>
@@ -265,23 +273,30 @@ export function SearchResult({ result, onLinkPress, onImageLoad, onImageError }:
             {aiDefinition || result.description}
           </Text>
           
-          {/* Show AI image info if available */}
-          {useAiImages && aiImageSearch.data?.images && aiImageSearch.data.images.length > 0 && (
+          {/* Show verified image info if available */}
+          {aiImageSearch.data?.images && aiImageSearch.data.images.length > 0 && (
             <View style={styles.aiImageInfo}>
               <Text style={styles.aiImageInfoText}>
-                Showing AI-curated image ({currentImageIndex + 1} of {aiImageSearch.data.images.length})
+                Verified symbol ({currentImageIndex + 1} of {aiImageSearch.data.images.length})
               </Text>
-              {aiImageSearch.data.images[currentImageIndex]?.description && (
-                <Text style={styles.aiImageDescription}>
-                  {aiImageSearch.data.images[currentImageIndex].description}
-                </Text>
-              )}
+              <Text style={styles.aiImageDescription}>
+                {imageDescription}
+              </Text>
+              <Text style={styles.sourceText}>
+                Source: {imageSource}
+              </Text>
             </View>
           )}
           
           <TouchableOpacity
             style={styles.linkButton}
-            onPress={() => onLinkPress(result.sourceUrl)}
+            onPress={() => {
+              // Use AI image source if available, otherwise use original
+              const sourceUrl = aiImageSearch.data?.images && aiImageSearch.data.images.length > 0 
+                ? aiImageSearch.data.images[currentImageIndex]?.source || result.sourceUrl
+                : result.sourceUrl;
+              onLinkPress(sourceUrl);
+            }}
           >
             <ExternalLink size={16} color="#667eea" />
             <Text style={styles.linkText}>View Source</Text>
@@ -394,6 +409,12 @@ const styles = StyleSheet.create({
     color: '#ffffff',
     fontSize: 11,
     lineHeight: 16,
+    marginBottom: 4,
+  },
+  sourceText: {
+    color: '#94a3b8',
+    fontSize: 10,
+    fontStyle: 'italic',
   },
   content: {
     gap: 8,

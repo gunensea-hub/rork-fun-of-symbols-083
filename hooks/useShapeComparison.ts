@@ -86,7 +86,7 @@ export function useShapeComparison() {
       const result = await trpcClient.symbols.searchImages.query({
         symbolName: selection1,
         symbolDescription: `Find specific examples from the category: ${selection1}`,
-        category: selection1
+        category: selection1.toLowerCase()
       });
       
       console.log('Search result:', result);
@@ -145,7 +145,7 @@ export function useShapeComparison() {
       const result = await trpcClient.symbols.searchImages.query({
         symbolName: customQuery,
         symbolDescription: customQuery,
-        category: selection1 || 'General'
+        category: (selection1 || 'General').toLowerCase()
       });
       
       console.log('Custom search result:', result);
