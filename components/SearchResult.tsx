@@ -140,7 +140,7 @@ export function SearchResult({ result, onLinkPress, onImageLoad, onImageError }:
     {
       symbolName: result.name,
       symbolDescription: result.description,
-      category: result.name.toLowerCase().includes('horus') || result.name.toLowerCase().includes('ancient') || result.name.toLowerCase().includes('egyptian') ? 'ancient symbols' : 'ancient symbols'
+      category: 'ancient symbols' // Always use ancient symbols for better matching
     },
     {
       enabled: true, // Always enabled to get curated results

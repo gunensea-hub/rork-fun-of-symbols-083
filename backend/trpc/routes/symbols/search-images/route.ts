@@ -26,6 +26,13 @@ export const searchImagesProcedure = publicProcedure
     try {
       console.log('Searching for images:', { symbolName, symbolDescription, category });
       
+      // First, try to find specific symbol matches
+      const specificResults = getSpecificSymbolMatch(symbolName, symbolDescription);
+      if (specificResults.images.length > 0) {
+        console.log('Found specific symbol match:', specificResults.images.length);
+        return specificResults;
+      }
+      
       // Use curated, verified symbols instead of AI search for better reliability
       console.log('Using curated symbol database for category:', category);
       
@@ -190,6 +197,123 @@ Return only valid JSON with REAL symbols and working image URLs.`
       };
     }
   });
+
+// Specific symbol matching function - returns exact matches for known symbols
+function getSpecificSymbolMatch(symbolName: string, symbolDescription: string) {
+  const searchText = (symbolName + ' ' + symbolDescription).toLowerCase();
+  
+  // Specific symbol database with exact matches
+  const specificSymbols: { [key: string]: any[] } = {
+    'eye of horus': [
+      {
+        url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b4/Eye_of_Horus_bw.svg/512px-Eye_of_Horus_bw.svg.png',
+        description: 'Eye of Horus - Ancient Egyptian Protection Symbol',
+        source: 'https://en.wikipedia.org/wiki/Eye_of_Horus',
+        relevanceScore: 100
+      }
+    ],
+    'horus': [
+      {
+        url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b4/Eye_of_Horus_bw.svg/512px-Eye_of_Horus_bw.svg.png',
+        description: 'Eye of Horus - Ancient Egyptian Protection Symbol',
+        source: 'https://en.wikipedia.org/wiki/Eye_of_Horus',
+        relevanceScore: 100
+      }
+    ],
+    'ankh': [
+      {
+        url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/58/Ankh.svg/512px-Ankh.svg.png',
+        description: 'Ankh - Ancient Egyptian Symbol of Life',
+        source: 'https://en.wikipedia.org/wiki/Ankh',
+        relevanceScore: 100
+      }
+    ],
+    'ouroboros': [
+      {
+        url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/7/71/Serpiente_alquimica.jpg/512px-Serpiente_alquimica.jpg',
+        description: 'Ouroboros - Ancient Symbol of Eternal Cycle',
+        source: 'https://en.wikipedia.org/wiki/Ouroboros',
+        relevanceScore: 100
+      }
+    ],
+    'yin yang': [
+      {
+        url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Yin_yang.svg/512px-Yin_yang.svg.png',
+        description: 'Yin Yang - Ancient Chinese Symbol of Balance',
+        source: 'https://en.wikipedia.org/wiki/Yin_and_yang',
+        relevanceScore: 100
+      }
+    ],
+    'pentagram': [
+      {
+        url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/63/Pentagram_green.svg/512px-Pentagram_green.svg.png',
+        description: 'Pentagram - Ancient Geometric Symbol',
+        source: 'https://en.wikipedia.org/wiki/Pentagram',
+        relevanceScore: 100
+      }
+    ],
+    'water molecule': [
+      {
+        url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b5/Water_molecule_3D.svg/256px-Water_molecule_3D.svg.png',
+        description: 'Water Molecule (H2O) - 3D Structure',
+        source: 'https://en.wikipedia.org/wiki/Water',
+        relevanceScore: 100
+      }
+    ],
+    'h2o': [
+      {
+        url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b5/Water_molecule_3D.svg/256px-Water_molecule_3D.svg.png',
+        description: 'Water Molecule (H2O) - 3D Structure',
+        source: 'https://en.wikipedia.org/wiki/Water',
+        relevanceScore: 100
+      }
+    ],
+    'carbon dioxide': [
+      {
+        url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8d/Carbon-dioxide-3D-vdW.png/256px-Carbon-dioxide-3D-vdW.png',
+        description: 'Carbon Dioxide (CO2) - Molecular Structure',
+        source: 'https://en.wikipedia.org/wiki/Carbon_dioxide',
+        relevanceScore: 100
+      }
+    ],
+    'co2': [
+      {
+        url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8d/Carbon-dioxide-3D-vdW.png/256px-Carbon-dioxide-3D-vdW.png',
+        description: 'Carbon Dioxide (CO2) - Molecular Structure',
+        source: 'https://en.wikipedia.org/wiki/Carbon_dioxide',
+        relevanceScore: 100
+      }
+    ],
+    'orion constellation': [
+      {
+        url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/91/Orion_constellation_map.svg/512px-Orion_constellation_map.svg.png',
+        description: 'Orion Constellation Map',
+        source: 'https://en.wikipedia.org/wiki/Orion_(constellation)',
+        relevanceScore: 100
+      }
+    ],
+    'pleiades': [
+      {
+        url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/4e/Pleiades_large.jpg/512px-Pleiades_large.jpg',
+        description: 'Pleiades Star Cluster (Seven Sisters)',
+        source: 'https://en.wikipedia.org/wiki/Pleiades',
+        relevanceScore: 100
+      }
+    ]
+  };
+  
+  // Check for exact matches first
+  for (const [key, images] of Object.entries(specificSymbols)) {
+    if (searchText.includes(key)) {
+      return {
+        images,
+        aiDefinition: `This is the authentic ${key} symbol with verified imagery from reliable sources.`
+      };
+    }
+  }
+  
+  return { images: [], aiDefinition: '' };
+}
 
 // Curated symbols function - returns verified, working symbols
 function getCuratedSymbols(symbolName: string, category: string) {
