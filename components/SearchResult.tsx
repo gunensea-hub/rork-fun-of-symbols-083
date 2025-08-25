@@ -135,12 +135,25 @@ export function SearchResult({ result, onLinkPress, onImageLoad, onImageError }:
   const [useAiImages, setUseAiImages] = useState(true); // Start with AI images enabled
   const [aiDefinition, setAiDefinition] = useState<string>('');
 
-  // AI-powered image search - always enabled for better results
+  // AI-powered image search with dynamic category detection
+  const getSymbolCategory = (name: string, description: string): string => {
+    const text = (name + ' ' + description).toLowerCase();
+    if (text.includes('star') || text.includes('constellation') || text.includes('galaxy') || text.includes('nebula')) {
+      return 'star clusters';
+    } else if (text.includes('chemical') || text.includes('molecule') || text.includes('h2o') || text.includes('co2') || text.includes('formula')) {
+      return 'chemical formula symbol';
+    } else if (text.includes('atom') || text.includes('electron') || text.includes('nucleus') || text.includes('orbital')) {
+      return 'atomic structure symbol';
+    } else {
+      return 'ancient symbols';
+    }
+  };
+
   const aiImageSearch = trpc.symbols.searchImages.useQuery(
     {
       symbolName: result.name,
       symbolDescription: result.description,
-      category: 'ancient symbols' // Always use ancient symbols for better matching
+      category: getSymbolCategory(result.name, result.description)
     },
     {
       enabled: true, // Always enabled to get curated results
@@ -262,7 +275,9 @@ export function SearchResult({ result, onLinkPress, onImageLoad, onImageError }:
             {/* Image source indicator */}
             {aiImageSearch.data?.images && aiImageSearch.data.images.length > 0 && (
               <View style={styles.imageSourceBadge}>
-                <Text style={styles.imageSourceText}>Verified</Text>
+                <Text style={styles.imageSourceText}>
+                  {aiImageSearch.data.images[currentImageIndex]?.source === 'AI Generated' ? '🤖 AI' : '✓ Verified'}
+                </Text>
               </View>
             )}
           </View>
@@ -288,11 +303,11 @@ export function SearchResult({ result, onLinkPress, onImageLoad, onImageError }:
             {aiDefinition || result.description}
           </Text>
           
-          {/* Show verified image info if available */}
+          {/* Show image info if available */}
           {aiImageSearch.data?.images && aiImageSearch.data.images.length > 0 && (
             <View style={styles.aiImageInfo}>
               <Text style={styles.aiImageInfoText}>
-                Verified symbol ({currentImageIndex + 1} of {aiImageSearch.data.images.length})
+                {aiImageSearch.data.images[currentImageIndex]?.source === 'AI Generated' ? 'AI Generated' : 'Verified'} symbol ({currentImageIndex + 1} of {aiImageSearch.data.images.length})
               </Text>
               <Text style={styles.aiImageDescription}>
                 {imageDescription}

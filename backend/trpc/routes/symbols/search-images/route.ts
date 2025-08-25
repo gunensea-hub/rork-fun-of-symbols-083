@@ -43,8 +43,8 @@ export const searchImagesProcedure = publicProcedure
         return curatedResults;
       }
       
-      // Fallback to AI search only if no curated results
-      console.log('No curated results, trying AI search...');
+      // Fallback to AI search and image generation if no curated results
+      console.log('No curated results, trying AI search and image generation...');
       const response = await fetch('https://toolkit.rork.com/text/llm/', {
         method: 'POST',
         headers: {
@@ -177,8 +177,14 @@ Return only valid JSON with REAL symbols and working image URLs.`
       let finalImages = validImages.slice(0, 5);
       
       if (finalImages.length === 0) {
-        console.log('No valid images from AI, using fallback images');
-        finalImages = getFallbackImages(symbolName, category);
+        console.log('No valid images from AI, trying AI image generation...');
+        const generatedImages = await generateSymbolImages(symbolName, symbolDescription, category);
+        if (generatedImages.length > 0) {
+          finalImages = generatedImages;
+        } else {
+          console.log('AI generation failed, using fallback images');
+          finalImages = getFallbackImages(symbolName, category);
+        }
       }
       
       return {
@@ -613,4 +619,61 @@ function getFallbackImages(_symbolName: string, category: string) {
   
   // Ultimate fallback - return empty array to force error handling
   return [];
+}
+
+// AI Image Generation function for unclear symbols
+async function generateSymbolImages(symbolName: string, symbolDescription: string, category: string) {
+  try {
+    console.log('Generating AI image for symbol:', symbolName);
+    
+    // Create a detailed prompt for symbol generation
+    const prompt = `Create a clear, detailed illustration of the ${symbolName} symbol. ${symbolDescription}. 
+    
+    Style requirements:
+    - Clean, minimalist design with clear lines
+    - High contrast for visibility
+    - Authentic representation based on historical/scientific accuracy
+    - Suitable for educational purposes
+    - White or transparent background
+    - Professional illustration style
+    
+    Category: ${category}
+    
+    Make sure the symbol is clearly recognizable and matches the description provided.`;
+    
+    const response = await fetch('https://toolkit.rork.com/images/generate/', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        prompt,
+        size: '1024x1024'
+      })
+    });
+    
+    if (!response.ok) {
+      console.error('AI image generation failed:', response.status);
+      return [];
+    }
+    
+    const data = await response.json();
+    
+    if (data.image && data.image.base64Data) {
+      // Convert base64 to data URL
+      const imageUrl = `data:${data.image.mimeType};base64,${data.image.base64Data}`;
+      
+      return [{
+        url: imageUrl,
+        description: `AI-generated illustration of ${symbolName}`,
+        source: 'AI Generated',
+        relevanceScore: 95
+      }];
+    }
+    
+    return [];
+  } catch (error) {
+    console.error('AI image generation error:', error);
+    return [];
+  }
 }

@@ -120,12 +120,25 @@ function SearchResultItem({ item, isSelected, onSelectResult, onLinkPress }: Sea
   const [allImagesFailed, setAllImagesFailed] = useState(false);
   const [useAiImages, setUseAiImages] = useState(false);
 
-  // AI-powered image search - always enabled for better results
+  // AI-powered image search with dynamic category detection
+  const getSymbolCategory = (name: string, description: string): string => {
+    const text = (name + ' ' + description).toLowerCase();
+    if (text.includes('star') || text.includes('constellation') || text.includes('galaxy') || text.includes('nebula')) {
+      return 'star clusters';
+    } else if (text.includes('chemical') || text.includes('molecule') || text.includes('h2o') || text.includes('co2') || text.includes('formula')) {
+      return 'chemical formula symbol';
+    } else if (text.includes('atom') || text.includes('electron') || text.includes('nucleus') || text.includes('orbital')) {
+      return 'atomic structure symbol';
+    } else {
+      return 'ancient symbols';
+    }
+  };
+
   const aiImageSearch = trpc.symbols.searchImages.useQuery(
     {
       symbolName: item.name,
       symbolDescription: item.description,
-      category: 'ancient symbols' // Always use ancient symbols for better matching
+      category: getSymbolCategory(item.name, item.description)
     },
     {
       enabled: true, // Always enabled to get curated results
@@ -236,7 +249,9 @@ function SearchResultItem({ item, isSelected, onSelectResult, onLinkPress }: Sea
           {/* Image source indicator */}
           {aiImageSearch.data?.images && aiImageSearch.data.images.length > 0 && (
             <View style={styles.imageSourceBadge}>
-              <Text style={styles.imageSourceText}>✓</Text>
+              <Text style={styles.imageSourceText}>
+                {aiImageSearch.data.images[currentImageIndex]?.source === 'AI Generated' ? '🤖' : '✓'}
+              </Text>
             </View>
           )}
         </View>
