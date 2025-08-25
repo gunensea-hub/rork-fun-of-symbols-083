@@ -155,23 +155,24 @@ export function SearchResult({ result, onLinkPress, onImageLoad, onImageError }:
   }, [aiImageSearch.data?.aiDefinition]);
 
   const handleImageError = () => {
-    console.log('Image failed to load:', imageUrlToUse);
+    console.log('Selected symbol image failed to load:', imageUrlToUse);
     console.log('Is original image:', imageUrlToUse === result.imageUrl);
     console.log('Original image failed flag:', originalImageFailed);
     console.log('Using AI images:', useAiImages);
     
-    // If the original imageUrl failed, mark it as failed
+    // If the original imageUrl failed, mark it as failed and try AI images
     if (imageUrlToUse === result.imageUrl && !originalImageFailed) {
-      console.log('Original image failed, switching to AI images');
+      console.log('Original selected symbol image failed, switching to AI images');
       setOriginalImageFailed(true);
-      onImageError?.(); // Notify parent that image failed
+      setUseAiImages(true);
+      onImageError?.(); // Notify parent that original image failed
       return;
     }
     
     // If using AI images, try next AI image
     if (useAiImages && aiImageSearch.data?.images) {
       const nextIndex = currentImageIndex + 1;
-      console.log(`Trying next AI image: ${nextIndex}/${aiImageSearch.data.images.length}`);
+      console.log(`Trying next AI image for selected symbol: ${nextIndex}/${aiImageSearch.data.images.length}`);
       if (nextIndex < aiImageSearch.data.images.length) {
         setCurrentImageIndex(nextIndex);
         return;
@@ -180,22 +181,24 @@ export function SearchResult({ result, onLinkPress, onImageLoad, onImageError }:
     
     // Try next curated image
     const nextIndex = currentImageIndex + 1;
-    console.log(`Trying next curated image: ${nextIndex}/${symbolImages.length}`);
+    console.log(`Trying next curated image for selected symbol: ${nextIndex}/${symbolImages.length}`);
     if (nextIndex < symbolImages.length) {
       setCurrentImageIndex(nextIndex);
     } else {
-      console.log('All images failed, showing placeholder');
+      console.log('All selected symbol images failed, showing placeholder');
       setAllImagesFailed(true);
       onImageError?.(); // Notify parent that all images failed
     }
   };
 
   const handleRefreshImages = () => {
+    console.log('Refreshing images for selected symbol');
     setCurrentImageIndex(0);
     setOriginalImageFailed(false);
     setAllImagesFailed(false);
     setUseAiImages(true);
     aiImageSearch.refetch();
+    onImageError?.(); // Reset parent state while refreshing
   };
 
   return (
@@ -210,10 +213,12 @@ export function SearchResult({ result, onLinkPress, onImageLoad, onImageError }:
               style={styles.image}
               resizeMode="cover"
               onLoad={() => {
-                console.log('Image loaded successfully:', imageUrlToUse);
+                console.log('Selected symbol image loaded successfully:', imageUrlToUse);
                 setAllImagesFailed(false);
-                setOriginalImageFailed(false);
-                onImageLoad?.();
+                if (imageUrlToUse === result.imageUrl) {
+                  setOriginalImageFailed(false);
+                }
+                onImageLoad?.(); // Notify parent that image loaded successfully
               }}
               onError={handleImageError}
             />

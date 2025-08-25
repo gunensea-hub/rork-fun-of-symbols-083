@@ -37,7 +37,17 @@ export function useShapeComparison() {
   const [selectedImageLoaded, setSelectedImageLoaded] = useState(false);
   const [selectedImageError, setSelectedImageError] = useState(false);
 
-  const canCompare = Boolean(selection1 && selection2 && selectedSearchResult && selectedImageLoaded && !selectedImageError && !isSearching && !isComparing);
+  const canCompare = Boolean(
+    selection1 && 
+    selection2 && 
+    selectedSearchResult && 
+    selectedImageLoaded && 
+    !selectedImageError && 
+    !isSearching && 
+    !isComparing &&
+    selectedSearchResult.imageUrl && // Ensure image URL exists
+    selectedSearchResult.imageUrl.trim() !== '' // Ensure image URL is not empty
+  );
 
   const resetSelections = () => {
     setSelection2(null);
@@ -86,12 +96,16 @@ export function useShapeComparison() {
       }
       
       // Convert the tRPC response format to our expected format
-      const searchResults = result.images.map(img => ({
-        name: img.description.split('.')[0] || 'Unknown Symbol', // Use first sentence as name
-        description: img.description,
-        imageUrl: img.url,
-        sourceUrl: img.source.startsWith('http') ? img.source : `https://en.wikipedia.org/wiki/${encodeURIComponent(img.source)}`
-      }));
+      const searchResults = result.images
+        .filter(img => img.url && img.description && img.relevanceScore >= 90) // Only high-relevance results
+        .map(img => ({
+          name: img.description.includes('(') ? 
+            img.description.split('(')[0].trim() : // Extract name before parentheses
+            img.description.split('.')[0] || 'Unknown Symbol',
+          description: img.description,
+          imageUrl: img.url,
+          sourceUrl: img.source.startsWith('http') ? img.source : `https://en.wikipedia.org/wiki/${encodeURIComponent(img.source)}`
+        }));
       
       console.log('Converted search results:', searchResults);
       setSearchResults({
@@ -141,12 +155,16 @@ export function useShapeComparison() {
       }
       
       // Convert the tRPC response format to our expected format
-      const searchResults = result.images.map(img => ({
-        name: img.description.split('.')[0] || customQuery,
-        description: img.description,
-        imageUrl: img.url,
-        sourceUrl: img.source.startsWith('http') ? img.source : `https://en.wikipedia.org/wiki/${encodeURIComponent(img.source)}`
-      }));
+      const searchResults = result.images
+        .filter(img => img.url && img.description && img.relevanceScore >= 90) // Only high-relevance results
+        .map(img => ({
+          name: img.description.includes('(') ? 
+            img.description.split('(')[0].trim() : // Extract name before parentheses
+            img.description.split('.')[0] || customQuery,
+          description: img.description,
+          imageUrl: img.url,
+          sourceUrl: img.source.startsWith('http') ? img.source : `https://en.wikipedia.org/wiki/${encodeURIComponent(img.source)}`
+        }));
       
       console.log('Converted custom search results:', searchResults);
       setSearchResults({
@@ -269,10 +287,17 @@ Return only valid JSON with a specific symbol from the target category and expla
 
   const handleSelectedSearchResultChange = (result: SearchResultType | null) => {
     console.log('Selected search result changed:', result?.name);
+    console.log('Image URL:', result?.imageUrl);
     setSelectedSearchResult(result);
     setSelectedImageLoaded(false);
     setSelectedImageError(false);
     setComparisonResult(null); // Clear previous comparison when selecting new result
+    
+    // Validate image URL immediately
+    if (result && (!result.imageUrl || result.imageUrl.trim() === '')) {
+      console.warn('Selected result has no valid image URL');
+      setSelectedImageError(true);
+    }
   };
 
   return {
@@ -295,5 +320,7 @@ Return only valid JSON with a specific symbol from the target category and expla
     selectedImageError,
     setSelectedImageLoaded,
     setSelectedImageError,
+    // Helper function to validate if image is relevant and loaded
+    isImageValid: selectedSearchResult && selectedImageLoaded && !selectedImageError && selectedSearchResult.imageUrl,
   };
 }

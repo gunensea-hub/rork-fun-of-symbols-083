@@ -36,55 +36,69 @@ export const searchImagesProcedure = publicProcedure
           messages: [
             {
               role: 'system',
-              content: `You are an expert image curator and symbol researcher. Given a symbol name, description, and category, you need to:
+              content: `You are an expert astronomer, chemist, and symbol researcher. Your task is to find SPECIFIC, REAL symbols that exist in the given category and provide accurate, working image URLs.
 
-1. Find 3-5 highly relevant, high-quality image URLs for the symbol
-2. Provide an enhanced AI-generated definition of the symbol
+IMPORTANT RULES:
+1. For "Star clusters" - Find REAL star clusters like Messier 13, Pleiades, Orion Nebula, etc.
+2. For "Star map" - Find REAL constellations like Orion, Ursa Major, Cassiopeia, etc.
+3. For "Chemical formula symbol" - Find REAL chemical compounds like H2O, CO2, CH4, etc.
+4. For "Atomic structure symbol" - Find REAL atomic diagrams like Hydrogen, Carbon, Oxygen atoms
+5. For "Ancient symbols" - Find REAL ancient symbols like Ankh, Ouroboros, Eye of Horus, etc.
 
-For images, prioritize REAL, WORKING URLs from:
-- Wikipedia Commons (upload.wikimedia.org) - these are most reliable
-- Unsplash with specific search terms (images.unsplash.com)
-- Educational websites (.edu domains)
-- Museum collections
-- NASA images (for astronomical symbols)
-- Scientific databases
+For images, ONLY use these trusted sources:
+- Wikipedia Commons: https://upload.wikimedia.org/wikipedia/commons/
+- NASA images: https://www.nasa.gov/ or https://hubblesite.org/
+- Educational institutions (.edu domains)
+- Wikimedia: https://commons.wikimedia.org/
 
-IMPORTANT: Only provide URLs that are likely to work. For astronomical symbols, use NASA or space agency images. For chemical symbols, use educational or scientific sources.
+DO NOT use:
+- Generic Unsplash images
+- Stock photos
+- Artistic interpretations
+- Unrelated images
 
-For each image, provide:
-- url: Direct image URL that will actually load (prefer .jpg, .png)
-- description: What the image shows
-- source: Source website/database
-- relevanceScore: 1-100 how relevant the image is
+For each symbol, provide:
+- url: REAL, working image URL of the ACTUAL symbol/object
+- description: What the SPECIFIC symbol/object is (not generic description)
+- source: The actual source website
+- relevanceScore: 90-100 for exact matches, lower for related
 
-For the AI definition:
-- Provide a comprehensive, accurate description
-- Include historical context, meaning, usage
-- Explain significance in its domain
-- Keep it informative but accessible
-
-Return JSON format:
+Return JSON format with REAL, SPECIFIC symbols:
 {
   "images": [
     {
-      "url": "https://example.com/image.jpg",
-      "description": "Description of what the image shows",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/...",
+      "description": "Messier 13 (Hercules Globular Cluster)",
       "source": "Wikipedia Commons",
-      "relevanceScore": 95
+      "relevanceScore": 98
     }
   ],
-  "aiDefinition": "Comprehensive definition here..."
+  "aiDefinition": "Detailed definition of the specific symbol..."
 }`
             },
             {
               role: 'user',
-              content: `Find relevant images and provide an enhanced definition for:
+              content: `Find SPECIFIC, REAL symbols from the category "${category}" and provide accurate images:
 
-Symbol: ${symbolName}
-Description: ${symbolDescription}
 Category: ${category}
+Context: ${symbolDescription}
 
-Find the most accurate and relevant images for this specific symbol. Focus on finding REAL, WORKING image URLs. For astronomical objects, use NASA or space agency sources. For chemical formulas, use educational sources. Return only valid JSON.`
+TASK:
+1. If category is "Star clusters" - find real star clusters like Messier 13, Pleiades, Orion Nebula
+2. If category is "Star map" - find real constellations like Orion, Ursa Major, Cassiopeia
+3. If category is "Chemical formula symbol" - find real molecules like H2O, CO2, CH4, NaCl
+4. If category is "Atomic structure symbol" - find real atomic diagrams of elements
+5. If category is "Ancient symbols" - find real ancient symbols like Ankh, Ouroboros, Eye of Horus
+
+Provide 3-5 DIFFERENT, SPECIFIC symbols from this category with their REAL images from Wikipedia Commons or NASA.
+
+Each symbol must be:
+- A real, specific example from the category
+- Have a working Wikipedia Commons or NASA image URL
+- Be accurately described with its proper name
+- Have high relevance (90-100 score)
+
+Return only valid JSON with REAL symbols and working image URLs.`
             }
           ]
         })
@@ -121,11 +135,20 @@ Find the most accurate and relevant images for this specific symbol. Focus on fi
         throw new Error('Invalid JSON response format');
       }
       
-      // Validate and filter results
+      // Validate and filter results - only accept high-relevance, specific symbols
       const validImages = (result.images || []).filter((img: any) => {
-        const isValid = img.url && img.description && img.source && typeof img.relevanceScore === 'number';
+        const isValid = img.url && 
+                       img.description && 
+                       img.source && 
+                       typeof img.relevanceScore === 'number' &&
+                       img.relevanceScore >= 85 && // Only high-relevance images
+                       (img.url.includes('wikimedia.org') || 
+                        img.url.includes('wikipedia.org') || 
+                        img.url.includes('nasa.gov') ||
+                        img.url.includes('hubblesite.org') ||
+                        img.url.includes('.edu')); // Only trusted sources
         if (!isValid) {
-          console.log('Invalid image filtered out:', img);
+          console.log('Invalid or low-relevance image filtered out:', img);
         }
         return isValid;
       });
@@ -158,105 +181,120 @@ Find the most accurate and relevant images for this specific symbol. Focus on fi
   });
 
 // Fallback images function
-function getFallbackImages(symbolName: string, category: string) {
-  const name = symbolName.toLowerCase();
+function getFallbackImages(_symbolName: string, category: string) {
   
-  // Specific high-quality images for common symbols
-  const specificImages: { [key: string]: any[] } = {
-    'messier 13': [
+  // Specific high-quality images for real symbols by category
+  const categorySpecificImages: { [key: string]: any[] } = {
+    'star clusters': [
       {
         url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/6d/Messier_13_Hubble_WikiSky.jpg/512px-Messier_13_Hubble_WikiSky.jpg',
-        description: 'Hubble Space Telescope image of Messier 13 (Hercules Globular Cluster)',
+        description: 'Messier 13 (Hercules Globular Cluster)',
         source: 'Wikipedia Commons',
         relevanceScore: 98
       },
       {
-        url: 'https://images.unsplash.com/photo-1446776653964-20c1d3a81b06?w=512&h=512&fit=crop&auto=format&q=80',
-        description: 'Star cluster in deep space',
-        source: 'Unsplash',
-        relevanceScore: 85
+        url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/4e/Pleiades_large.jpg/512px-Pleiades_large.jpg',
+        description: 'Pleiades Star Cluster (Seven Sisters)',
+        source: 'Wikipedia Commons',
+        relevanceScore: 97
+      },
+      {
+        url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/f/ff/NGC_7293_Helix_Nebula.jpg/512px-NGC_7293_Helix_Nebula.jpg',
+        description: 'Helix Nebula (NGC 7293)',
+        source: 'Wikipedia Commons',
+        relevanceScore: 95
       }
     ],
-    'hercules globular cluster': [
+    'star map': [
       {
-        url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/6d/Messier_13_Hubble_WikiSky.jpg/512px-Messier_13_Hubble_WikiSky.jpg',
-        description: 'Hubble Space Telescope image of Messier 13 (Hercules Globular Cluster)',
+        url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/91/Orion_constellation_map.svg/512px-Orion_constellation_map.svg.png',
+        description: 'Orion Constellation Map',
         source: 'Wikipedia Commons',
         relevanceScore: 98
+      },
+      {
+        url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/10/Ursa_Major_constellation_map.svg/512px-Ursa_Major_constellation_map.svg.png',
+        description: 'Ursa Major (Big Dipper) Constellation',
+        source: 'Wikipedia Commons',
+        relevanceScore: 97
+      },
+      {
+        url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b4/Cassiopeia_constellation_map.svg/512px-Cassiopeia_constellation_map.svg.png',
+        description: 'Cassiopeia Constellation Map',
+        source: 'Wikipedia Commons',
+        relevanceScore: 96
       }
     ],
-    'water': [
+    'chemical formula symbol': [
       {
         url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b5/Water_molecule_3D.svg/256px-Water_molecule_3D.svg.png',
-        description: '3D model of water molecule (H2O)',
+        description: 'Water Molecule (H2O) - 3D Structure',
+        source: 'Wikipedia Commons',
+        relevanceScore: 98
+      },
+      {
+        url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8d/Carbon-dioxide-3D-vdW.png/256px-Carbon-dioxide-3D-vdW.png',
+        description: 'Carbon Dioxide (CO2) - Molecular Structure',
+        source: 'Wikipedia Commons',
+        relevanceScore: 97
+      },
+      {
+        url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/58/Methane-CRC-MW-3D-balls.png/256px-Methane-CRC-MW-3D-balls.png',
+        description: 'Methane (CH4) - Ball and Stick Model',
+        source: 'Wikipedia Commons',
+        relevanceScore: 96
+      }
+    ],
+    'atomic structure symbol': [
+      {
+        url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/5f/Hydrogen_Density_Plots.png/512px-Hydrogen_Density_Plots.png',
+        description: 'Hydrogen Atom - Electron Orbital Structure',
+        source: 'Wikipedia Commons',
+        relevanceScore: 98
+      },
+      {
+        url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e2/Stylised_atom_with_three_Bohr_model_orbits_and_stylised_nucleus.svg/256px-Stylised_atom_with_three_Bohr_model_orbits_and_stylised_nucleus.svg.png',
+        description: 'Bohr Model of Atom - Classical Representation',
         source: 'Wikipedia Commons',
         relevanceScore: 95
       }
     ],
-    'h2o': [
+    'ancient symbols': [
       {
-        url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b5/Water_molecule_3D.svg/256px-Water_molecule_3D.svg.png',
-        description: '3D model of water molecule (H2O)',
+        url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/58/Ankh.svg/256px-Ankh.svg.png',
+        description: 'Ankh - Ancient Egyptian Symbol of Life',
         source: 'Wikipedia Commons',
-        relevanceScore: 95
+        relevanceScore: 98
+      },
+      {
+        url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/7/71/Serpiente_alquimica.jpg/256px-Serpiente_alquimica.jpg',
+        description: 'Ouroboros - Ancient Symbol of Eternal Cycle',
+        source: 'Wikipedia Commons',
+        relevanceScore: 97
+      },
+      {
+        url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b4/Eye_of_Horus_bw.svg/256px-Eye_of_Horus_bw.svg.png',
+        description: 'Eye of Horus - Ancient Egyptian Protection Symbol',
+        source: 'Wikipedia Commons',
+        relevanceScore: 96
       }
     ]
   };
   
-  // Check for specific matches
-  for (const [key, images] of Object.entries(specificImages)) {
-    if (name.includes(key) || key.includes(name)) {
-      return images;
+  // Check for category-specific images first
+  const categoryKey = category.toLowerCase();
+  if (categorySpecificImages[categoryKey]) {
+    return categorySpecificImages[categoryKey];
+  }
+  
+  // Fallback to first available category
+  const fallbackCategories = ['star clusters', 'chemical formula symbol', 'ancient symbols', 'atomic structure symbol', 'star map'];
+  for (const fallbackCategory of fallbackCategories) {
+    if (categorySpecificImages[fallbackCategory]) {
+      return categorySpecificImages[fallbackCategory].slice(0, 1); // Return just one fallback
     }
   }
   
-  // Category-based fallbacks
-  if (category.includes('star') || name.includes('star') || name.includes('cluster') || name.includes('galaxy')) {
-    return [
-      {
-        url: 'https://images.unsplash.com/photo-1446776653964-20c1d3a81b06?w=512&h=512&fit=crop&auto=format&q=80',
-        description: 'Beautiful star cluster in deep space',
-        source: 'Unsplash',
-        relevanceScore: 80
-      },
-      {
-        url: 'https://images.unsplash.com/photo-1502134249126-9f3755a50d78?w=512&h=512&fit=crop&auto=format&q=80',
-        description: 'Stellar formation and cosmic structures',
-        source: 'Unsplash',
-        relevanceScore: 75
-      }
-    ];
-  }
-  
-  if (category.includes('chemical') || name.includes('molecule') || name.includes('formula')) {
-    return [
-      {
-        url: 'https://images.unsplash.com/photo-1532187863486-abf9dbad1b69?w=512&h=512&fit=crop&auto=format&q=80',
-        description: 'Molecular structure and chemical bonds',
-        source: 'Unsplash',
-        relevanceScore: 80
-      }
-    ];
-  }
-  
-  if (category.includes('ancient') || name.includes('ancient') || name.includes('symbol')) {
-    return [
-      {
-        url: 'https://images.unsplash.com/photo-1539650116574-75c0c6d73f6e?w=512&h=512&fit=crop&auto=format&q=80',
-        description: 'Ancient symbols and hieroglyphic inscriptions',
-        source: 'Unsplash',
-        relevanceScore: 80
-      }
-    ];
-  }
-  
-  // Default fallback
-  return [
-    {
-      url: 'https://images.unsplash.com/photo-1513475382585-d06e58bcb0e0?w=512&h=512&fit=crop&auto=format&q=80',
-      description: 'Abstract symbol and pattern',
-      source: 'Unsplash',
-      relevanceScore: 70
-    }
-  ];
+  // Ultimate fallback - return empty array to force error handling
+  return [];
 }
