@@ -327,31 +327,31 @@ function getCuratedSymbols(symbolName: string, category: string) {
     ],
     'ancient symbols': [
       {
-        url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/58/Ankh.svg/256px-Ankh.svg.png',
-        description: 'Ankh - Ancient Egyptian Symbol of Life',
-        source: 'https://en.wikipedia.org/wiki/Ankh',
+        url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b4/Eye_of_Horus_bw.svg/512px-Eye_of_Horus_bw.svg.png',
+        description: 'Eye of Horus - Ancient Egyptian Protection Symbol',
+        source: 'https://en.wikipedia.org/wiki/Eye_of_Horus',
         relevanceScore: 98
       },
       {
-        url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/7/71/Serpiente_alquimica.jpg/256px-Serpiente_alquimica.jpg',
-        description: 'Ouroboros - Ancient Symbol of Eternal Cycle',
-        source: 'https://en.wikipedia.org/wiki/Ouroboros',
+        url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/58/Ankh.svg/512px-Ankh.svg.png',
+        description: 'Ankh - Ancient Egyptian Symbol of Life',
+        source: 'https://en.wikipedia.org/wiki/Ankh',
         relevanceScore: 97
       },
       {
-        url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b4/Eye_of_Horus_bw.svg/256px-Eye_of_Horus_bw.svg.png',
-        description: 'Eye of Horus - Ancient Egyptian Protection Symbol',
-        source: 'https://en.wikipedia.org/wiki/Eye_of_Horus',
+        url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/7/71/Serpiente_alquimica.jpg/512px-Serpiente_alquimica.jpg',
+        description: 'Ouroboros - Ancient Symbol of Eternal Cycle',
+        source: 'https://en.wikipedia.org/wiki/Ouroboros',
         relevanceScore: 96
       },
       {
-        url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Yin_yang.svg/256px-Yin_yang.svg.png',
+        url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Yin_yang.svg/512px-Yin_yang.svg.png',
         description: 'Yin Yang - Ancient Chinese Symbol of Balance',
         source: 'https://en.wikipedia.org/wiki/Yin_and_yang',
         relevanceScore: 95
       },
       {
-        url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/63/Pentagram_green.svg/256px-Pentagram_green.svg.png',
+        url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/63/Pentagram_green.svg/512px-Pentagram_green.svg.png',
         description: 'Pentagram - Ancient Geometric Symbol',
         source: 'https://en.wikipedia.org/wiki/Pentagram',
         relevanceScore: 94
@@ -453,21 +453,21 @@ function getFallbackImages(_symbolName: string, category: string) {
     ],
     'ancient symbols': [
       {
-        url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/58/Ankh.svg/256px-Ankh.svg.png',
-        description: 'Ankh - Ancient Egyptian Symbol of Life',
-        source: 'Wikipedia Commons',
+        url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b4/Eye_of_Horus_bw.svg/512px-Eye_of_Horus_bw.svg.png',
+        description: 'Eye of Horus - Ancient Egyptian Protection Symbol',
+        source: 'https://en.wikipedia.org/wiki/Eye_of_Horus',
         relevanceScore: 98
       },
       {
-        url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/7/71/Serpiente_alquimica.jpg/256px-Serpiente_alquimica.jpg',
-        description: 'Ouroboros - Ancient Symbol of Eternal Cycle',
-        source: 'Wikipedia Commons',
+        url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/58/Ankh.svg/512px-Ankh.svg.png',
+        description: 'Ankh - Ancient Egyptian Symbol of Life',
+        source: 'https://en.wikipedia.org/wiki/Ankh',
         relevanceScore: 97
       },
       {
-        url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b4/Eye_of_Horus_bw.svg/256px-Eye_of_Horus_bw.svg.png',
-        description: 'Eye of Horus - Ancient Egyptian Protection Symbol',
-        source: 'Wikipedia Commons',
+        url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/7/71/Serpiente_alquimica.jpg/512px-Serpiente_alquimica.jpg',
+        description: 'Ouroboros - Ancient Symbol of Eternal Cycle',
+        source: 'https://en.wikipedia.org/wiki/Ouroboros',
         relevanceScore: 96
       }
     ]

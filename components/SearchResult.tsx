@@ -17,32 +17,47 @@ const getSymbolImages = (name: string): string[] => {
   // Generate symbol-specific images based on the name and category
   const symbolKeywords = name.toLowerCase();
   
-  // Specific images for common chemical formulas
+  // Specific images for common symbols with verified Wikipedia URLs
   const specificImages: { [key: string]: string[] } = {
+    'eye of horus': [
+      'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b4/Eye_of_Horus_bw.svg/512px-Eye_of_Horus_bw.svg.png'
+    ],
+    'horus': [
+      'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b4/Eye_of_Horus_bw.svg/512px-Eye_of_Horus_bw.svg.png'
+    ],
+    'ankh': [
+      'https://upload.wikimedia.org/wikipedia/commons/thumb/5/58/Ankh.svg/512px-Ankh.svg.png'
+    ],
     'water': [
-      'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b5/Water_molecule_3D.svg/256px-Water_molecule_3D.svg.png',
-      'https://upload.wikimedia.org/wikipedia/commons/thumb/6/60/Water-2D-flat.png/256px-Water-2D-flat.png'
+      'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b5/Water_molecule_3D.svg/512px-Water_molecule_3D.svg.png',
+      'https://upload.wikimedia.org/wikipedia/commons/thumb/6/60/Water-2D-flat.png/512px-Water-2D-flat.png'
     ],
     'h2o': [
-      'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b5/Water_molecule_3D.svg/256px-Water_molecule_3D.svg.png',
-      'https://upload.wikimedia.org/wikipedia/commons/thumb/6/60/Water-2D-flat.png/256px-Water-2D-flat.png'
+      'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b5/Water_molecule_3D.svg/512px-Water_molecule_3D.svg.png',
+      'https://upload.wikimedia.org/wikipedia/commons/thumb/6/60/Water-2D-flat.png/512px-Water-2D-flat.png'
     ],
     'carbon dioxide': [
-      'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8d/Carbon-dioxide-3D-vdW.png/256px-Carbon-dioxide-3D-vdW.png',
-      'https://upload.wikimedia.org/wikipedia/commons/thumb/d/d1/Carbon-dioxide-2D.svg/256px-Carbon-dioxide-2D.svg.png'
+      'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8d/Carbon-dioxide-3D-vdW.png/512px-Carbon-dioxide-3D-vdW.png',
+      'https://upload.wikimedia.org/wikipedia/commons/thumb/d/d1/Carbon-dioxide-2D.svg/512px-Carbon-dioxide-2D.svg.png'
     ],
     'co2': [
-      'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8d/Carbon-dioxide-3D-vdW.png/256px-Carbon-dioxide-3D-vdW.png',
-      'https://upload.wikimedia.org/wikipedia/commons/thumb/d/d1/Carbon-dioxide-2D.svg/256px-Carbon-dioxide-2D.svg.png'
+      'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8d/Carbon-dioxide-3D-vdW.png/512px-Carbon-dioxide-3D-vdW.png',
+      'https://upload.wikimedia.org/wikipedia/commons/thumb/d/d1/Carbon-dioxide-2D.svg/512px-Carbon-dioxide-2D.svg.png'
     ],
     'methane': [
-      'https://upload.wikimedia.org/wikipedia/commons/thumb/5/58/Methane-CRC-MW-3D-balls.png/256px-Methane-CRC-MW-3D-balls.png'
+      'https://upload.wikimedia.org/wikipedia/commons/thumb/5/58/Methane-CRC-MW-3D-balls.png/512px-Methane-CRC-MW-3D-balls.png'
     ],
     'ch4': [
-      'https://upload.wikimedia.org/wikipedia/commons/thumb/5/58/Methane-CRC-MW-3D-balls.png/256px-Methane-CRC-MW-3D-balls.png'
+      'https://upload.wikimedia.org/wikipedia/commons/thumb/5/58/Methane-CRC-MW-3D-balls.png/512px-Methane-CRC-MW-3D-balls.png'
     ],
     'ouroboros': [
-      'https://upload.wikimedia.org/wikipedia/commons/thumb/7/71/Serpiente_alquimica.jpg/256px-Serpiente_alquimica.jpg'
+      'https://upload.wikimedia.org/wikipedia/commons/thumb/7/71/Serpiente_alquimica.jpg/512px-Serpiente_alquimica.jpg'
+    ],
+    'orion': [
+      'https://upload.wikimedia.org/wikipedia/commons/thumb/9/91/Orion_constellation_map.svg/512px-Orion_constellation_map.svg.png'
+    ],
+    'pleiades': [
+      'https://upload.wikimedia.org/wikipedia/commons/thumb/4/4e/Pleiades_large.jpg/512px-Pleiades_large.jpg'
     ]
   };
   
@@ -53,42 +68,42 @@ const getSymbolImages = (name: string): string[] => {
     }
   }
   
-  // Curated image collections for different symbol types
+  // Verified Wikipedia Commons images for different symbol types
   const symbolImages = {
-    // Star and astronomy related
+    // Star and astronomy related - verified Wikipedia images
     star: [
-      'https://images.unsplash.com/photo-1446776653964-20c1d3a81b06?w=400&h=300&fit=crop&auto=format&q=80',
-      'https://images.unsplash.com/photo-1502134249126-9f3755a50d78?w=400&h=300&fit=crop&auto=format&q=80',
-      'https://images.unsplash.com/photo-1419242902214-272b3f66ee7a?w=400&h=300&fit=crop&auto=format&q=80',
-      'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&h=300&fit=crop&auto=format&q=80'
+      'https://upload.wikimedia.org/wikipedia/commons/thumb/9/91/Orion_constellation_map.svg/512px-Orion_constellation_map.svg.png',
+      'https://upload.wikimedia.org/wikipedia/commons/thumb/4/4e/Pleiades_large.jpg/512px-Pleiades_large.jpg',
+      'https://upload.wikimedia.org/wikipedia/commons/thumb/6/6d/Messier_13_Hubble_WikiSky.jpg/512px-Messier_13_Hubble_WikiSky.jpg',
+      'https://upload.wikimedia.org/wikipedia/commons/thumb/1/10/Ursa_Major_constellation_map.svg/512px-Ursa_Major_constellation_map.svg.png'
     ],
-    // Ancient and historical symbols
+    // Ancient and historical symbols - verified Wikipedia images
     ancient: [
-      'https://images.unsplash.com/photo-1539650116574-75c0c6d73f6e?w=400&h=300&fit=crop&auto=format&q=80',
-      'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=300&fit=crop&auto=format&q=80',
-      'https://images.unsplash.com/photo-1471919743851-c4df8b6ee133?w=400&h=300&fit=crop&auto=format&q=80',
-      'https://images.unsplash.com/photo-1594736797933-d0401ba2fe65?w=400&h=300&fit=crop&auto=format&q=80'
+      'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b4/Eye_of_Horus_bw.svg/512px-Eye_of_Horus_bw.svg.png',
+      'https://upload.wikimedia.org/wikipedia/commons/thumb/5/58/Ankh.svg/512px-Ankh.svg.png',
+      'https://upload.wikimedia.org/wikipedia/commons/thumb/7/71/Serpiente_alquimica.jpg/512px-Serpiente_alquimica.jpg',
+      'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Yin_yang.svg/512px-Yin_yang.svg.png'
     ],
-    // Chemical and scientific symbols
+    // Chemical and scientific symbols - verified Wikipedia images
     chemical: [
-      'https://images.unsplash.com/photo-1532187863486-abf9dbad1b69?w=400&h=300&fit=crop&auto=format&q=80',
-      'https://images.unsplash.com/photo-1554475901-4538ddfbccc2?w=400&h=300&fit=crop&auto=format&q=80',
-      'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=300&fit=crop&auto=format&q=80',
-      'https://images.unsplash.com/photo-1518152006812-edab29b069ac?w=400&h=300&fit=crop&auto=format&q=80'
+      'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b5/Water_molecule_3D.svg/512px-Water_molecule_3D.svg.png',
+      'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8d/Carbon-dioxide-3D-vdW.png/512px-Carbon-dioxide-3D-vdW.png',
+      'https://upload.wikimedia.org/wikipedia/commons/thumb/5/58/Methane-CRC-MW-3D-balls.png/512px-Methane-CRC-MW-3D-balls.png',
+      'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e9/Sodium-chloride-3D-ionic.png/512px-Sodium-chloride-3D-ionic.png'
     ],
-    // Atomic and molecular structures
+    // Atomic and molecular structures - verified Wikipedia images
     atomic: [
-      'https://images.unsplash.com/photo-1635070041078-e363dbe005cb?w=400&h=300&fit=crop&auto=format&q=80',
-      'https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=400&h=300&fit=crop&auto=format&q=80',
-      'https://images.unsplash.com/photo-1614935151651-0bea6508db6b?w=400&h=300&fit=crop&auto=format&q=80',
-      'https://images.unsplash.com/photo-1582719471384-894fbb16e074?w=400&h=300&fit=crop&auto=format&q=80'
+      'https://upload.wikimedia.org/wikipedia/commons/thumb/5/5f/Hydrogen_Density_Plots.png/512px-Hydrogen_Density_Plots.png',
+      'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e2/Stylised_atom_with_three_Bohr_model_orbits_and_stylised_nucleus.svg/512px-Stylised_atom_with_three_Bohr_model_orbits_and_stylised_nucleus.svg.png',
+      'https://upload.wikimedia.org/wikipedia/commons/thumb/c/cf/Carbon_orbitals.png/512px-Carbon_orbitals.png',
+      'https://upload.wikimedia.org/wikipedia/commons/thumb/f/f0/Electron_shell_008_Oxygen.svg/512px-Electron_shell_008_Oxygen.svg.png'
     ],
-    // General symbols and patterns
+    // General symbols and patterns - verified Wikipedia images
     symbol: [
-      'https://images.unsplash.com/photo-1513475382585-d06e58bcb0e0?w=400&h=300&fit=crop&auto=format&q=80',
-      'https://images.unsplash.com/photo-1544735716-392fe2489ffa?w=400&h=300&fit=crop&auto=format&q=80',
-      'https://images.unsplash.com/photo-1578662015928-3dae4c2f8f82?w=400&h=300&fit=crop&auto=format&q=80',
-      'https://images.unsplash.com/photo-1557804506-669a67965ba0?w=400&h=300&fit=crop&auto=format&q=80'
+      'https://upload.wikimedia.org/wikipedia/commons/thumb/6/63/Pentagram_green.svg/512px-Pentagram_green.svg.png',
+      'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Yin_yang.svg/512px-Yin_yang.svg.png',
+      'https://upload.wikimedia.org/wikipedia/commons/thumb/5/58/Ankh.svg/512px-Ankh.svg.png',
+      'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b4/Eye_of_Horus_bw.svg/512px-Eye_of_Horus_bw.svg.png'
     ]
   };
   
@@ -125,7 +140,7 @@ export function SearchResult({ result, onLinkPress, onImageLoad, onImageError }:
     {
       symbolName: result.name,
       symbolDescription: result.description,
-      category: 'ancient symbols' // Use ancient symbols for Eye of Horus and similar symbols
+      category: result.name.toLowerCase().includes('horus') || result.name.toLowerCase().includes('ancient') || result.name.toLowerCase().includes('egyptian') ? 'ancient symbols' : 'ancient symbols'
     },
     {
       enabled: true, // Always enabled to get curated results

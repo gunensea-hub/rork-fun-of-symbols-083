@@ -145,7 +145,7 @@ export function useShapeComparison() {
       const result = await trpcClient.symbols.searchImages.query({
         symbolName: customQuery,
         symbolDescription: customQuery,
-        category: (selection1 || 'General').toLowerCase()
+        category: (selection1 || 'ancient symbols').toLowerCase()
       });
       
       console.log('Custom search result:', result);
