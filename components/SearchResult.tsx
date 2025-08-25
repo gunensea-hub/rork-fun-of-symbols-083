@@ -117,7 +117,7 @@ export function SearchResult({ result, onLinkPress, onImageLoad, onImageError }:
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [originalImageFailed, setOriginalImageFailed] = useState(false);
   const [allImagesFailed, setAllImagesFailed] = useState(false);
-  const [useAiImages, setUseAiImages] = useState(false);
+  const [useAiImages, setUseAiImages] = useState(true); // Start with AI images enabled
   const [aiDefinition, setAiDefinition] = useState<string>('');
 
   // AI-powered image search
@@ -160,11 +160,10 @@ export function SearchResult({ result, onLinkPress, onImageLoad, onImageError }:
     console.log('Original image failed flag:', originalImageFailed);
     console.log('Using AI images:', useAiImages);
     
-    // If the original imageUrl failed, try AI images first
-    if (imageUrlToUse === result.imageUrl && !originalImageFailed && !useAiImages) {
-      console.log('Original image failed, trying AI images');
+    // If the original imageUrl failed, mark it as failed
+    if (imageUrlToUse === result.imageUrl && !originalImageFailed) {
+      console.log('Original image failed, switching to AI images');
       setOriginalImageFailed(true);
-      setUseAiImages(true);
       onImageError?.(); // Notify parent that image failed
       return;
     }

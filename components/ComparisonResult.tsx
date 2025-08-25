@@ -119,7 +119,7 @@ export function ComparisonResult({ result, onLinkPress, onCompareAgain }: Compar
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [originalImageFailed, setOriginalImageFailed] = useState(false);
   const [allImagesFailed, setAllImagesFailed] = useState(false);
-  const [useAiImages, setUseAiImages] = useState(false);
+  const [useAiImages, setUseAiImages] = useState(true); // Start with AI images enabled
   const [aiDefinition, setAiDefinition] = useState<string>('');
 
   // AI-powered image search for the matched symbol
@@ -162,11 +162,10 @@ export function ComparisonResult({ result, onLinkPress, onCompareAgain }: Compar
     console.log('Original image failed flag:', originalImageFailed);
     console.log('Using AI images:', useAiImages);
     
-    // If the original targetImageUrl failed, try AI images first
-    if (imageUrlToUse === result.targetImageUrl && !originalImageFailed && !useAiImages) {
-      console.log('Original target image failed, trying AI images');
+    // If the original targetImageUrl failed, mark it as failed
+    if (imageUrlToUse === result.targetImageUrl && !originalImageFailed) {
+      console.log('Original target image failed, switching to AI images');
       setOriginalImageFailed(true);
-      setUseAiImages(true);
       return;
     }
     

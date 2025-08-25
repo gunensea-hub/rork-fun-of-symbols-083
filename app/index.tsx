@@ -50,10 +50,7 @@ export default function ShapeComparisonScreen() {
     performComparison,
     canCompare,
     resetAll,
-    selectedImageLoaded,
-    selectedImageError,
-    setSelectedImageLoaded,
-    setSelectedImageError,
+
   } = useShapeComparison();
 
   const {
@@ -477,8 +474,7 @@ export default function ShapeComparisonScreen() {
             <SearchResult
               result={selectedSearchResult}
               onLinkPress={openLink}
-              onImageLoad={() => setSelectedImageLoaded(true)}
-              onImageError={() => setSelectedImageError(true)}
+
             />
           </View>
         )}
@@ -499,7 +495,7 @@ export default function ShapeComparisonScreen() {
                 (isComparing || !termsAccepted) && styles.compareButtonDisabled
               ]}
               onPress={handleCompare}
-              disabled={isComparing || !termsAccepted || !selectedImageLoaded || selectedImageError || !canCompare}
+              disabled={isComparing || !termsAccepted || !selectedSearchResult || !canCompare}
             >
               {isComparing ? (
                 <>
@@ -512,8 +508,6 @@ export default function ShapeComparisonScreen() {
                   <Text style={styles.compareButtonText}>
                     {!termsAccepted ? 'Accept Terms to Compare' : 
                      !selectedSearchResult ? 'Select Symbol First' :
-                     !selectedImageLoaded ? 'Loading Image...' :
-                     selectedImageError ? 'Image Failed - Try Refresh' :
                      !selection2 ? 'Select Second Shape' :
                      'Compare Shapes'}
                   </Text>
