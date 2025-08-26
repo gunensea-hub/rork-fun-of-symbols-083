@@ -170,11 +170,13 @@ function SearchResultItem({ item, isSelected, onSelectResult, onLinkPress }: Sea
     console.log('Original image failed flag:', originalImageFailed);
     console.log('Using AI images:', useAiImages);
     
-    // If the original imageUrl failed, try AI images first
+    // If the original imageUrl failed, automatically trigger AI verification
     if (imageUrlToUse === item.imageUrl && !originalImageFailed && !useAiImages) {
-      console.log('Original list item image failed, trying AI images');
+      console.log('Original list item image failed, automatically switching to AI-verified images');
       setOriginalImageFailed(true);
       setUseAiImages(true);
+      // Trigger AI search immediately
+      aiImageSearch.refetch();
       return;
     }
     
@@ -194,8 +196,10 @@ function SearchResultItem({ item, isSelected, onSelectResult, onLinkPress }: Sea
     if (nextIndex < symbolImages.length) {
       setCurrentImageIndex(nextIndex);
     } else {
-      console.log('All list item images failed, showing placeholder');
+      console.log('All list item images failed, triggering AI generation');
       setAllImagesFailed(true);
+      // Trigger AI image generation as final fallback
+      aiImageSearch.refetch();
     }
   };
 
@@ -265,7 +269,7 @@ function SearchResultItem({ item, isSelected, onSelectResult, onLinkPress }: Sea
             disabled={aiImageSearch.isLoading}
           >
             <Text style={styles.retryButtonText}>
-              {aiImageSearch.isLoading ? 'Searching...' : 'Try AI'}
+              {aiImageSearch.isLoading ? 'AI Verifying...' : 'AI Verify'}
             </Text>
           </TouchableOpacity>
         </View>

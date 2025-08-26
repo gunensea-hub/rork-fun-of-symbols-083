@@ -626,20 +626,74 @@ async function generateSymbolImages(symbolName: string, symbolDescription: strin
   try {
     console.log('Generating AI image for symbol:', symbolName);
     
-    // Create a detailed prompt for symbol generation
-    const prompt = `Create a clear, detailed illustration of the ${symbolName} symbol. ${symbolDescription}. 
+    // First, use AI to verify and get accurate description of the symbol
+    const verificationResponse = await fetch('https://toolkit.rork.com/text/llm/', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        messages: [
+          {
+            role: 'system',
+            content: `You are an expert in symbols, mythology, chemistry, astronomy, and ancient cultures. Your task is to verify and provide the most accurate description of a symbol for image generation.
+
+For each symbol, provide:
+1. Accurate visual description
+2. Key identifying features
+3. Historical/scientific context
+4. Proper proportions and details
+
+Be extremely specific about visual elements like shapes, lines, curves, orientations, and symbolic elements.`
+          },
+          {
+            role: 'user',
+            content: `Verify and describe the visual appearance of this symbol for accurate image generation:
+
+Symbol: ${symbolName}
+Description: ${symbolDescription}
+Category: ${category}
+
+Provide a detailed visual description focusing on:
+- Exact shape and form
+- Key visual elements
+- Proper proportions
+- Traditional representation
+- Any specific details that make it authentic
+
+Return only the visual description for image generation.`
+          }
+        ]
+      })
+    });
+
+    let verifiedDescription = symbolDescription;
+    if (verificationResponse.ok) {
+      const verificationData = await verificationResponse.json();
+      if (verificationData.completion) {
+        verifiedDescription = verificationData.completion.trim();
+        console.log('AI verified symbol description:', verifiedDescription);
+      }
+    }
     
-    Style requirements:
-    - Clean, minimalist design with clear lines
-    - High contrast for visibility
-    - Authentic representation based on historical/scientific accuracy
-    - Suitable for educational purposes
-    - White or transparent background
-    - Professional illustration style
-    
-    Category: ${category}
-    
-    Make sure the symbol is clearly recognizable and matches the description provided.`;
+    // Create a detailed prompt for symbol generation using verified description
+    const prompt = `Create a clear, detailed, and authentic illustration of the ${symbolName}.
+
+Detailed Description: ${verifiedDescription}
+
+Style requirements:
+- Clean, minimalist design with clear, bold lines
+- High contrast black lines on white/transparent background
+- Authentic representation based on historical/scientific accuracy
+- Professional educational illustration style
+- No text or labels
+- Centered composition
+- Clear visibility of all important details
+- Traditional proportions and orientation
+
+Category: ${category}
+
+Make the symbol instantly recognizable and historically/scientifically accurate. Focus on the essential visual elements that define this specific symbol.`;
     
     const response = await fetch('https://toolkit.rork.com/images/generate/', {
       method: 'POST',
@@ -665,7 +719,7 @@ async function generateSymbolImages(symbolName: string, symbolDescription: strin
       
       return [{
         url: imageUrl,
-        description: `AI-generated illustration of ${symbolName}`,
+        description: `AI-verified and generated illustration of ${symbolName}`,
         source: 'AI Generated',
         relevanceScore: 95
       }];

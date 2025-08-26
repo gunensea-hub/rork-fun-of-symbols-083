@@ -196,11 +196,13 @@ export function SearchResult({ result, onLinkPress, onImageLoad, onImageError }:
     console.log('Original image failed flag:', originalImageFailed);
     console.log('Using AI images:', useAiImages);
     
-    // If the original imageUrl failed, mark it as failed and try AI images
+    // If the original imageUrl failed, mark it as failed and automatically trigger AI search
     if (imageUrlToUse === result.imageUrl && !originalImageFailed) {
-      console.log('Original selected symbol image failed, switching to AI images');
+      console.log('Original selected symbol image failed, automatically switching to AI-verified images');
       setOriginalImageFailed(true);
       setUseAiImages(true);
+      // Trigger AI search immediately
+      aiImageSearch.refetch();
       onImageError?.(); // Notify parent that original image failed
       return;
     }
@@ -221,8 +223,10 @@ export function SearchResult({ result, onLinkPress, onImageLoad, onImageError }:
     if (nextIndex < symbolImages.length) {
       setCurrentImageIndex(nextIndex);
     } else {
-      console.log('All selected symbol images failed, showing placeholder');
+      console.log('All selected symbol images failed, triggering AI generation');
       setAllImagesFailed(true);
+      // Trigger AI image generation as final fallback
+      aiImageSearch.refetch();
       onImageError?.(); // Notify parent that all images failed
     }
   };
@@ -291,7 +295,7 @@ export function SearchResult({ result, onLinkPress, onImageLoad, onImageError }:
               disabled={aiImageSearch.isLoading}
             >
               <Text style={styles.retryButtonText}>
-                {aiImageSearch.isLoading ? 'Searching...' : 'Try AI Search'}
+                {aiImageSearch.isLoading ? 'AI Verifying...' : 'AI Verify & Generate'}
               </Text>
             </TouchableOpacity>
           </View>

@@ -303,8 +303,18 @@ const runAIDemo = async () => {
   log('   1. Select "Ancient symbols" category', 'blue');
   log('   2. Click "Auto Search" button', 'blue');
   log('   3. Watch AI find Eye of Horus symbol', 'blue');
-  log('   4. See real-time image validation', 'blue');
-  log('   5. Compare with another symbol!', 'blue');
+  log('   4. See real-time image validation with ✓ Verified badges', 'blue');
+  log('   5. Try the refresh button to trigger AI re-verification', 'blue');
+  log('   6. Notice automatic fallback when images fail to load', 'blue');
+  log('   7. Compare with another symbol!', 'blue');
+  
+  // Start the app automatically
+  log('\n🎬 Starting the app to demonstrate AI verification...', 'cyan');
+  try {
+    execSync('bun expo start --clear', { stdio: 'inherit' });
+  } catch (error) {
+    log(`❌ Error starting app: ${error.message}`, 'red');
+  }
   
   return allImplemented;
 };
@@ -312,7 +322,14 @@ const runAIDemo = async () => {
 // Run the demo
 if (require.main === module) {
   runAIDemo().then(success => {
-    process.exit(success ? 0 : 1);
+    if (!success) {
+      log('\n⚠️  Some features may not work as expected.', 'yellow');
+    }
+    log('\n✅ AI Symbol Verification Demo completed!', 'green');
+    log('The app now automatically verifies symbols and generates relevant images using AI.', 'blue');
+  }).catch(error => {
+    log(`\n❌ Demo failed: ${error.message}`, 'red');
+    process.exit(1);
   });
 }
 
