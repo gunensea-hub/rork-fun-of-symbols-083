@@ -132,7 +132,7 @@ export function SearchResult({ result, onLinkPress, onImageLoad, onImageError }:
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [originalImageFailed, setOriginalImageFailed] = useState(false);
   const [allImagesFailed, setAllImagesFailed] = useState(false);
-  const [useAiImages, setUseAiImages] = useState(true); // Start with AI images enabled
+  const [useAiImages, setUseAiImages] = useState(false); // Start with original image, then fallback to AI
   const [aiDefinition, setAiDefinition] = useState<string>('');
 
   // AI-powered image search with dynamic category detection
@@ -169,8 +169,8 @@ export function SearchResult({ result, onLinkPress, onImageLoad, onImageError }:
   let imageDescription = result.description;
   let imageSource = 'Original Source';
   
-  // Always prefer AI curated images if available
-  if (aiImageSearch.data?.images && aiImageSearch.data.images.length > 0) {
+  // Use AI curated images if enabled or original failed
+  if (useAiImages && aiImageSearch.data?.images && aiImageSearch.data.images.length > 0) {
     const aiImageIndex = Math.min(currentImageIndex, aiImageSearch.data.images.length - 1);
     const aiImage = aiImageSearch.data.images[aiImageIndex];
     if (aiImage) {
@@ -178,8 +178,8 @@ export function SearchResult({ result, onLinkPress, onImageLoad, onImageError }:
       imageDescription = aiImage.description;
       imageSource = aiImage.source;
     }
-  } else if (originalImageFailed) {
-    // Fallback to curated images only if original failed and no AI images
+  } else if (originalImageFailed && !useAiImages) {
+    // Fallback to curated images only if original failed and not using AI
     imageUrlToUse = currentImageUrl;
   }
 
@@ -196,13 +196,10 @@ export function SearchResult({ result, onLinkPress, onImageLoad, onImageError }:
     console.log('Original image failed flag:', originalImageFailed);
     console.log('Using AI images:', useAiImages);
     
-    // If the original imageUrl failed, mark it as failed and automatically trigger AI search
+    // If the original imageUrl failed, mark it as failed and try curated images first
     if (imageUrlToUse === result.imageUrl && !originalImageFailed) {
-      console.log('Original selected symbol image failed, automatically switching to AI-verified images');
+      console.log('Original selected symbol image failed, trying curated images first');
       setOriginalImageFailed(true);
-      setUseAiImages(true);
-      // Trigger AI search immediately
-      aiImageSearch.refetch();
       onImageError?.(); // Notify parent that original image failed
       return;
     }
@@ -217,28 +214,30 @@ export function SearchResult({ result, onLinkPress, onImageLoad, onImageError }:
       }
     }
     
-    // Try next curated image
+    // Try next curated image or switch to AI
     const nextIndex = currentImageIndex + 1;
-    console.log(`Trying next curated image for selected symbol: ${nextIndex}/${symbolImages.length}`);
-    if (nextIndex < symbolImages.length) {
+    if (!useAiImages && nextIndex < symbolImages.length) {
+      console.log(`Trying next curated image for selected symbol: ${nextIndex}/${symbolImages.length}`);
       setCurrentImageIndex(nextIndex);
-    } else {
-      console.log('All selected symbol images failed, triggering AI generation');
-      setAllImagesFailed(true);
-      // Trigger AI image generation as final fallback
+    } else if (!useAiImages) {
+      console.log('All curated images failed, switching to AI-verified images');
+      setUseAiImages(true);
+      setCurrentImageIndex(0);
       aiImageSearch.refetch();
+    } else {
+      console.log('All selected symbol images failed, showing placeholder');
+      setAllImagesFailed(true);
       onImageError?.(); // Notify parent that all images failed
     }
   };
 
   const handleRefreshImages = () => {
-    console.log('Refreshing images for selected symbol');
+    console.log('Refreshing images for selected symbol - switching to AI verification');
     setCurrentImageIndex(0);
     setOriginalImageFailed(false);
     setAllImagesFailed(false);
     setUseAiImages(true);
     aiImageSearch.refetch();
-    onImageError?.(); // Reset parent state while refreshing
   };
 
   return (

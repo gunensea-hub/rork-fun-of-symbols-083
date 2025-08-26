@@ -45,151 +45,123 @@ export const searchImagesProcedure = publicProcedure
       
       // Fallback to AI search and image generation if no curated results
       console.log('No curated results, trying AI search and image generation...');
-      const response = await fetch('https://toolkit.rork.com/text/llm/', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          messages: [
-            {
-              role: 'system',
-              content: `You are an expert astronomer, chemist, and symbol researcher. Your task is to find SPECIFIC, REAL symbols that exist in the given category and provide accurate, working image URLs.
+      
+      // First try AI search with better error handling
+      let aiSearchResult = null;
+      try {
+        const response = await fetch('https://toolkit.rork.com/text/llm/', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            messages: [
+              {
+                role: 'system',
+                content: `You are an expert symbol researcher. Find REAL, SPECIFIC symbols with verified Wikipedia Commons URLs.
 
-IMPORTANT RULES:
-1. For "Star clusters" - Find REAL star clusters like Messier 13, Pleiades, Orion Nebula, etc.
-2. For "Star map" - Find REAL constellations like Orion, Ursa Major, Cassiopeia, etc.
-3. For "Chemical formula symbol" - Find REAL chemical compounds like H2O, CO2, CH4, etc.
-4. For "Atomic structure symbol" - Find REAL atomic diagrams like Hydrogen, Carbon, Oxygen atoms
-5. For "Ancient symbols" - Find REAL ancient symbols like Ankh, Ouroboros, Eye of Horus, etc.
+RULES:
+1. ONLY use Wikipedia Commons URLs: https://upload.wikimedia.org/wikipedia/commons/
+2. Provide REAL symbols that actually exist
+3. Each symbol must have a working Wikipedia Commons image
+4. Return valid JSON format
 
-For images, ONLY use these trusted sources:
-- Wikipedia Commons: https://upload.wikimedia.org/wikipedia/commons/
-- NASA images: https://www.nasa.gov/ or https://hubblesite.org/
-- Educational institutions (.edu domains)
-- Wikimedia: https://commons.wikimedia.org/
+For "${category}" category, find specific examples:
+- Star clusters: Messier 13, Pleiades, Orion Nebula
+- Chemical formulas: H2O, CO2, CH4, NaCl
+- Ancient symbols: Eye of Horus, Ankh, Ouroboros
+- Atomic structures: Hydrogen atom, Bohr model
+- Star maps: Orion, Ursa Major, Cassiopeia
 
-DO NOT use:
-- Generic Unsplash images
-- Stock photos
-- Artistic interpretations
-- Unrelated images
-
-For each symbol, provide:
-- url: REAL, working image URL of the ACTUAL symbol/object
-- description: What the SPECIFIC symbol/object is (not generic description)
-- source: The actual source website
-- relevanceScore: 90-100 for exact matches, lower for related
-
-Return JSON format with REAL, SPECIFIC symbols:
+Return format:
 {
   "images": [
     {
-      "url": "https://upload.wikimedia.org/wikipedia/commons/...",
-      "description": "Messier 13 (Hercules Globular Cluster)",
-      "source": "Wikipedia Commons",
-      "relevanceScore": 98
+      "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/...",
+      "description": "Specific symbol name",
+      "source": "https://en.wikipedia.org/wiki/...",
+      "relevanceScore": 95
     }
   ],
-  "aiDefinition": "Detailed definition of the specific symbol..."
+  "aiDefinition": "Brief definition"
 }`
-            },
-            {
-              role: 'user',
-              content: `Find SPECIFIC, REAL symbols from the category "${category}" and provide accurate images:
+              },
+              {
+                role: 'user',
+                content: `Find 3-5 REAL symbols for category "${category}" with working Wikipedia Commons images. Symbol context: ${symbolDescription}`
+              }
+            ]
+          }),
 
-Category: ${category}
-Context: ${symbolDescription}
-
-TASK:
-1. If category is "Star clusters" - find real star clusters like Messier 13, Pleiades, Orion Nebula
-2. If category is "Star map" - find real constellations like Orion, Ursa Major, Cassiopeia
-3. If category is "Chemical formula symbol" - find real molecules like H2O, CO2, CH4, NaCl
-4. If category is "Atomic structure symbol" - find real atomic diagrams of elements
-5. If category is "Ancient symbols" - find real ancient symbols like Ankh, Ouroboros, Eye of Horus
-
-Provide 3-5 DIFFERENT, SPECIFIC symbols from this category with their REAL images from Wikipedia Commons or NASA.
-
-Each symbol must be:
-- A real, specific example from the category
-- Have a working Wikipedia Commons or NASA image URL
-- Be accurately described with its proper name
-- Have high relevance (90-100 score)
-
-Return only valid JSON with REAL symbols and working image URLs.`
-            }
-          ]
-        })
-      });
-
-      if (!response.ok) {
-        console.error('AI API error:', response.status, response.statusText);
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      
-      const data = await response.json();
-      console.log('AI API response received:', !!data.completion);
-      
-      if (!data.completion) {
-        throw new Error('No completion in response');
-      }
-      
-      let result;
-      try {
-        // Clean the completion text
-        let cleanCompletion = data.completion.trim();
-        if (cleanCompletion.startsWith('```json')) {
-          cleanCompletion = cleanCompletion.replace(/```json\s*/, '').replace(/```\s*$/, '');
-        } else if (cleanCompletion.startsWith('```')) {
-          cleanCompletion = cleanCompletion.replace(/```\s*/, '').replace(/```\s*$/, '');
-        }
+        });
         
-        console.log('Parsing AI response...');
-        result = JSON.parse(cleanCompletion);
-        console.log('AI response parsed successfully, images found:', result.images?.length || 0);
-      } catch (parseError) {
-        console.error('JSON parse error:', parseError);
-        console.error('Raw completion:', data.completion);
-        throw new Error('Invalid JSON response format');
+        if (response.ok) {
+          const data = await response.json();
+          if (data.completion) {
+            try {
+              let cleanCompletion = data.completion.trim();
+              if (cleanCompletion.startsWith('```json')) {
+                cleanCompletion = cleanCompletion.replace(/```json\s*/, '').replace(/```\s*$/, '');
+              } else if (cleanCompletion.startsWith('```')) {
+                cleanCompletion = cleanCompletion.replace(/```\s*/, '').replace(/```\s*$/, '');
+              }
+              
+              aiSearchResult = JSON.parse(cleanCompletion);
+              console.log('AI search successful, found images:', aiSearchResult.images?.length || 0);
+            } catch (parseError) {
+              console.error('AI response parse error:', parseError);
+            }
+          }
+        }
+      } catch (aiError) {
+        console.error('AI search failed:', aiError instanceof Error ? aiError.message : String(aiError));
+      }
+
+      // Process AI search results if available
+      let finalImages: any[] = [];
+      let aiDefinition = symbolDescription;
+      
+      if (aiSearchResult?.images) {
+        // Validate and filter AI results
+        const validImages = aiSearchResult.images.filter((img: any) => {
+          const isValid = img.url && 
+                         img.description && 
+                         img.source && 
+                         typeof img.relevanceScore === 'number' &&
+                         img.relevanceScore >= 85 && 
+                         img.url.includes('wikimedia.org');
+          if (!isValid) {
+            console.log('Invalid AI image filtered out:', img);
+          }
+          return isValid;
+        });
+        
+        if (validImages.length > 0) {
+          finalImages = validImages.slice(0, 5);
+          aiDefinition = aiSearchResult.aiDefinition || symbolDescription;
+          console.log('Using AI search results:', finalImages.length);
+        }
       }
       
-      // Validate and filter results - only accept high-relevance, specific symbols
-      const validImages = (result.images || []).filter((img: any) => {
-        const isValid = img.url && 
-                       img.description && 
-                       img.source && 
-                       typeof img.relevanceScore === 'number' &&
-                       img.relevanceScore >= 85 && // Only high-relevance images
-                       (img.url.includes('wikimedia.org') || 
-                        img.url.includes('wikipedia.org') || 
-                        img.url.includes('nasa.gov') ||
-                        img.url.includes('hubblesite.org') ||
-                        img.url.includes('.edu')); // Only trusted sources
-        if (!isValid) {
-          console.log('Invalid or low-relevance image filtered out:', img);
-        }
-        return isValid;
-      });
-      
-      console.log('Valid images after filtering:', validImages.length);
-      
-      // Add fallback images if no valid images found
-      let finalImages = validImages.slice(0, 5);
-      
+      // If no valid AI results, try AI image generation
       if (finalImages.length === 0) {
-        console.log('No valid images from AI, trying AI image generation...');
+        console.log('No valid AI search results, trying image generation...');
         const generatedImages = await generateSymbolImages(symbolName, symbolDescription, category);
         if (generatedImages.length > 0) {
           finalImages = generatedImages;
-        } else {
-          console.log('AI generation failed, using fallback images');
-          finalImages = getFallbackImages(symbolName, category);
+          console.log('Using AI generated images:', finalImages.length);
         }
+      }
+      
+      // Final fallback to curated images
+      if (finalImages.length === 0) {
+        console.log('AI generation failed, using fallback images');
+        finalImages = getFallbackImages(symbolName, category);
       }
       
       return {
         images: finalImages,
-        aiDefinition: result.aiDefinition || symbolDescription
+        aiDefinition
       };
     } catch (error) {
       console.error('Image search error:', error);
@@ -626,74 +598,17 @@ async function generateSymbolImages(symbolName: string, symbolDescription: strin
   try {
     console.log('Generating AI image for symbol:', symbolName);
     
-    // First, use AI to verify and get accurate description of the symbol
-    const verificationResponse = await fetch('https://toolkit.rork.com/text/llm/', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        messages: [
-          {
-            role: 'system',
-            content: `You are an expert in symbols, mythology, chemistry, astronomy, and ancient cultures. Your task is to verify and provide the most accurate description of a symbol for image generation.
-
-For each symbol, provide:
-1. Accurate visual description
-2. Key identifying features
-3. Historical/scientific context
-4. Proper proportions and details
-
-Be extremely specific about visual elements like shapes, lines, curves, orientations, and symbolic elements.`
-          },
-          {
-            role: 'user',
-            content: `Verify and describe the visual appearance of this symbol for accurate image generation:
-
-Symbol: ${symbolName}
-Description: ${symbolDescription}
-Category: ${category}
-
-Provide a detailed visual description focusing on:
-- Exact shape and form
-- Key visual elements
-- Proper proportions
-- Traditional representation
-- Any specific details that make it authentic
-
-Return only the visual description for image generation.`
-          }
-        ]
-      })
-    });
-
-    let verifiedDescription = symbolDescription;
-    if (verificationResponse.ok) {
-      const verificationData = await verificationResponse.json();
-      if (verificationData.completion) {
-        verifiedDescription = verificationData.completion.trim();
-        console.log('AI verified symbol description:', verifiedDescription);
-      }
-    }
+    // Create a focused prompt for symbol generation
+    const categoryPrompts: { [key: string]: string } = {
+      'ancient symbols': `Create a clear, authentic illustration of the ancient symbol "${symbolName}". Style: Clean black lines on white background, historically accurate, traditional proportions, no text labels.`,
+      'chemical formula symbol': `Create a scientific diagram of the chemical compound "${symbolName}". Style: Clean molecular structure, proper atomic bonds, educational illustration, no background.`,
+      'star clusters': `Create an astronomical illustration of "${symbolName}". Style: Realistic space object, clear details, scientific accuracy, dark space background with bright stars.`,
+      'atomic structure symbol': `Create a scientific diagram of "${symbolName}" atomic structure. Style: Clean electron orbitals, nucleus, educational illustration, proper atomic model.`,
+      'star map': `Create a constellation map of "${symbolName}". Style: Connected star pattern, clean lines, astronomical accuracy, dark background with bright stars.`
+    };
     
-    // Create a detailed prompt for symbol generation using verified description
-    const prompt = `Create a clear, detailed, and authentic illustration of the ${symbolName}.
-
-Detailed Description: ${verifiedDescription}
-
-Style requirements:
-- Clean, minimalist design with clear, bold lines
-- High contrast black lines on white/transparent background
-- Authentic representation based on historical/scientific accuracy
-- Professional educational illustration style
-- No text or labels
-- Centered composition
-- Clear visibility of all important details
-- Traditional proportions and orientation
-
-Category: ${category}
-
-Make the symbol instantly recognizable and historically/scientifically accurate. Focus on the essential visual elements that define this specific symbol.`;
+    const prompt = categoryPrompts[category.toLowerCase()] || 
+      `Create a clear, detailed illustration of "${symbolName}" from the ${category} category. Style: Clean, professional, educational, no text labels.`;
     
     const response = await fetch('https://toolkit.rork.com/images/generate/', {
       method: 'POST',
@@ -703,7 +618,8 @@ Make the symbol instantly recognizable and historically/scientifically accurate.
       body: JSON.stringify({
         prompt,
         size: '1024x1024'
-      })
+      }),
+
     });
     
     if (!response.ok) {
@@ -719,9 +635,9 @@ Make the symbol instantly recognizable and historically/scientifically accurate.
       
       return [{
         url: imageUrl,
-        description: `AI-verified and generated illustration of ${symbolName}`,
+        description: `AI-generated illustration of ${symbolName}`,
         source: 'AI Generated',
-        relevanceScore: 95
+        relevanceScore: 90
       }];
     }
     
