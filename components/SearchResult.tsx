@@ -157,7 +157,9 @@ export function SearchResult({ result, onLinkPress, onImageLoad, onImageError }:
     },
     {
       enabled: true, // Always enabled to get curated results
-      staleTime: 1000 * 60 * 10, // Cache for 10 minutes
+      staleTime: 1000 * 60 * 5, // Cache for 5 minutes (shorter for better refresh)
+      refetchOnMount: false, // Don't refetch on mount to avoid unnecessary calls
+      refetchOnWindowFocus: false, // Don't refetch on window focus
     }
   );
 
@@ -231,13 +233,24 @@ export function SearchResult({ result, onLinkPress, onImageLoad, onImageError }:
     }
   };
 
-  const handleRefreshImages = () => {
-    console.log('Refreshing images for selected symbol - switching to AI verification');
+  const handleRefreshImages = async () => {
+    console.log('🔄 Refreshing images for selected symbol - switching to AI verification');
+    console.log('Current state:', { currentImageIndex, originalImageFailed, allImagesFailed, useAiImages });
+    
+    // Reset all states for fresh AI verification
     setCurrentImageIndex(0);
     setOriginalImageFailed(false);
     setAllImagesFailed(false);
     setUseAiImages(true);
-    aiImageSearch.refetch();
+    
+    // Force refetch the AI search with fresh data
+    console.log('🤖 Triggering AI image search refetch...');
+    try {
+      await aiImageSearch.refetch();
+      console.log('✅ AI image search refetch completed');
+    } catch (error) {
+      console.error('❌ AI image search refetch failed:', error);
+    }
   };
 
   return (
@@ -264,9 +277,13 @@ export function SearchResult({ result, onLinkPress, onImageLoad, onImageError }:
             
             {/* AI Image Search Button */}
             <TouchableOpacity
-              style={styles.refreshButton}
+              style={[
+                styles.refreshButton,
+                aiImageSearch.isLoading && styles.refreshButtonLoading
+              ]}
               onPress={handleRefreshImages}
               disabled={aiImageSearch.isLoading}
+              testID="ai-refresh-button"
             >
               {aiImageSearch.isLoading ? (
                 <ActivityIndicator size="small" color="#667eea" />
@@ -276,10 +293,10 @@ export function SearchResult({ result, onLinkPress, onImageLoad, onImageError }:
             </TouchableOpacity>
             
             {/* Image source indicator */}
-            {aiImageSearch.data?.images && aiImageSearch.data.images.length > 0 && (
+            {useAiImages && aiImageSearch.data?.images && aiImageSearch.data.images.length > 0 && (
               <View style={styles.imageSourceBadge}>
                 <Text style={styles.imageSourceText}>
-                  {aiImageSearch.data.images[currentImageIndex]?.source === 'AI Generated' ? '🤖 AI' : '✓ Verified'}
+                  {aiImageSearch.data.images[Math.min(currentImageIndex, aiImageSearch.data.images.length - 1)]?.source === 'AI Generated' ? '🤖 AI' : '✓ Verified'}
                 </Text>
               </View>
             )}
@@ -289,12 +306,19 @@ export function SearchResult({ result, onLinkPress, onImageLoad, onImageError }:
             <ImageIcon size={48} color="#666" />
             <Text style={styles.placeholderText}>Image not available</Text>
             <TouchableOpacity
-              style={styles.retryButton}
+              style={[
+                styles.retryButton,
+                aiImageSearch.isLoading && styles.retryButtonLoading
+              ]}
               onPress={handleRefreshImages}
               disabled={aiImageSearch.isLoading}
+              testID="ai-verify-generate-button"
             >
+              {aiImageSearch.isLoading && (
+                <ActivityIndicator size="small" color="white" style={{ marginRight: 8 }} />
+              )}
               <Text style={styles.retryButtonText}>
-                {aiImageSearch.isLoading ? 'AI Verifying...' : 'AI Verify & Generate'}
+                {aiImageSearch.isLoading ? 'AI Verifying...' : '🤖 AI Verify & Generate'}
               </Text>
             </TouchableOpacity>
           </View>
@@ -472,5 +496,15 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#667eea',
     fontWeight: '500',
+  },
+  refreshButtonLoading: {
+    opacity: 0.7,
+    backgroundColor: 'rgba(255, 255, 255, 0.6)',
+  },
+  retryButtonLoading: {
+    opacity: 0.8,
+    backgroundColor: '#5a67d8',
+    flexDirection: 'row',
+    alignItems: 'center',
   },
 });
