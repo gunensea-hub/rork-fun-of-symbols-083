@@ -52,7 +52,6 @@ export default function ShapeComparisonScreen() {
     resetAll,
     setSelectedImageLoaded,
     setSelectedImageError,
-    isImageValid,
   } = useShapeComparison();
 
   const {
@@ -506,7 +505,7 @@ export default function ShapeComparisonScreen() {
                 (isComparing || !termsAccepted) && styles.compareButtonDisabled
               ]}
               onPress={handleCompare}
-              disabled={isComparing || !termsAccepted || !selectedSearchResult || !canCompare || !isImageValid}
+              disabled={isComparing || !termsAccepted || !canCompare}
             >
               {isComparing ? (
                 <>
@@ -519,7 +518,6 @@ export default function ShapeComparisonScreen() {
                   <Text style={styles.compareButtonText}>
                     {!termsAccepted ? 'Accept Terms to Compare' : 
                      !selectedSearchResult ? 'Select Symbol First' :
-                     !isImageValid ? 'Image Loading...' :
                      !selection2 ? 'Select Second Shape' :
                      'Compare Shapes'}
                   </Text>

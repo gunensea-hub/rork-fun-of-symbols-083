@@ -41,12 +41,9 @@ export function useShapeComparison() {
     selection1 && 
     selection2 && 
     selectedSearchResult && 
-    selectedImageLoaded && 
-    !selectedImageError && 
     !isSearching && 
-    !isComparing &&
-    selectedSearchResult.imageUrl && // Ensure image URL exists
-    selectedSearchResult.imageUrl.trim() !== '' // Ensure image URL is not empty
+    !isComparing
+    // Removed strict image loading requirements since AI verification handles fallbacks
   );
 
   const resetSelections = () => {
@@ -320,7 +317,7 @@ Return only valid JSON with a specific symbol from the target category and expla
     selectedImageError,
     setSelectedImageLoaded,
     setSelectedImageError,
-    // Helper function to validate if image is relevant and loaded
-    isImageValid: selectedSearchResult && selectedImageLoaded && !selectedImageError && selectedSearchResult.imageUrl,
+    // Helper function to validate if image is relevant and loaded (more lenient for AI fallbacks)
+    isImageValid: selectedSearchResult && (selectedImageLoaded || !selectedImageError),
   };
 }
