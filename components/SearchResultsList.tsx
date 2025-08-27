@@ -215,6 +215,7 @@ function SearchResultItem({ item, isSelected, onSelectResult, onLinkPress }: Sea
     <TouchableOpacity
       style={[styles.resultCard, isSelected && styles.selectedCard]}
       onPress={() => onSelectResult(item)}
+      testID="search-result-card"
     >
       <View style={styles.cardHeader}>
         <Text style={styles.resultName}>{item.name}</Text>

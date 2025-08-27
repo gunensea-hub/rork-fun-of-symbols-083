@@ -51,6 +51,7 @@ export function SelectionDropdown<T extends string>({
         ]}
         onPress={handleToggle}
         disabled={disabled}
+        testID={compact ? 'selection-dropdown-1' : 'selection-dropdown-0'}
       >
         <Text
           style={[

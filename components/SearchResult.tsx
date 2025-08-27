@@ -273,9 +273,11 @@ export function SearchResult({ result, onLinkPress, onImageLoad, onImageError }:
         onImageLoad?.(); // Notify parent that we have valid images
       } else {
         console.log('⚠️ AI verification returned no results');
+        // Don't set allImagesFailed here, let the image loading handle it
       }
     } catch (error) {
       console.error('❌ AI image search refetch failed:', error);
+      // Don't set allImagesFailed here, let the image loading handle it
     }
   };
 

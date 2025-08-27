@@ -43,7 +43,7 @@ export function useShapeComparison() {
     selectedSearchResult && 
     !isSearching && 
     !isComparing
-    // Removed strict image loading requirements since AI verification handles fallbacks
+    // AI verification handles image fallbacks, so we don't require strict image loading
   );
 
   const resetSelections = () => {
