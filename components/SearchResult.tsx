@@ -157,8 +157,8 @@ export function SearchResult({ result, onLinkPress, onImageLoad, onImageError }:
     },
     {
       enabled: true, // Always enabled to get curated results
-      staleTime: 1000 * 60 * 5, // Cache for 5 minutes (shorter for better refresh)
-      refetchOnMount: false, // Don't refetch on mount to avoid unnecessary calls
+      staleTime: 1000 * 60 * 2, // Cache for 2 minutes (shorter for better refresh)
+      refetchOnMount: true, // Refetch on mount to get fresh AI results
       refetchOnWindowFocus: false, // Don't refetch on window focus
     }
   );
@@ -166,31 +166,48 @@ export function SearchResult({ result, onLinkPress, onImageLoad, onImageError }:
   const symbolImages = getSymbolImages(result.name);
   const currentImageUrl = symbolImages[currentImageIndex];
   
-  // Determine which image to use - prioritize AI curated images
+  // Determine which image to use - prioritize AI curated images when available
   let imageUrlToUse = result.imageUrl;
   let imageDescription = result.description;
   let imageSource = 'Original Source';
   
-  // Use AI curated images if enabled or original failed
-  if (useAiImages && aiImageSearch.data?.images && aiImageSearch.data.images.length > 0) {
+  // Always use AI curated images if available and enabled, or if original failed
+  if ((useAiImages || originalImageFailed) && aiImageSearch.data?.images && aiImageSearch.data.images.length > 0) {
     const aiImageIndex = Math.min(currentImageIndex, aiImageSearch.data.images.length - 1);
     const aiImage = aiImageSearch.data.images[aiImageIndex];
     if (aiImage) {
       imageUrlToUse = aiImage.url;
       imageDescription = aiImage.description;
       imageSource = aiImage.source;
+      console.log('Using AI image:', { url: imageUrlToUse, description: imageDescription, source: imageSource });
     }
-  } else if (originalImageFailed && !useAiImages) {
+  } else if (originalImageFailed && !useAiImages && symbolImages.length > 0) {
     // Fallback to curated images only if original failed and not using AI
     imageUrlToUse = currentImageUrl;
+    console.log('Using curated fallback image:', imageUrlToUse);
   }
 
-  // Update AI definition when available
+  // Update AI definition when available and auto-enable AI images if we have good results
   useEffect(() => {
     if (aiImageSearch.data?.aiDefinition) {
       setAiDefinition(aiImageSearch.data.aiDefinition);
     }
-  }, [aiImageSearch.data?.aiDefinition]);
+    
+    // Auto-enable AI images if we have high-quality AI results and original image failed or is poor quality
+    if (aiImageSearch.data?.images && aiImageSearch.data.images.length > 0) {
+      const hasHighQualityAiImages = aiImageSearch.data.images.some(img => 
+        img.relevanceScore >= 95 && 
+        img.url.includes('wikimedia.org')
+      );
+      
+      // Auto-switch to AI images if we have high-quality results
+      if (hasHighQualityAiImages && !useAiImages) {
+        console.log('Auto-enabling AI images due to high-quality results');
+        setUseAiImages(true);
+        setCurrentImageIndex(0);
+      }
+    }
+  }, [aiImageSearch.data, useAiImages]);
 
   const handleImageError = () => {
     console.log('Selected symbol image failed to load:', imageUrlToUse);
@@ -246,8 +263,17 @@ export function SearchResult({ result, onLinkPress, onImageLoad, onImageError }:
     // Force refetch the AI search with fresh data
     console.log('🤖 Triggering AI image search refetch...');
     try {
-      await aiImageSearch.refetch();
-      console.log('✅ AI image search refetch completed');
+      const result = await aiImageSearch.refetch();
+      console.log('✅ AI image search refetch completed:', result.data?.images?.length || 0, 'images found');
+      
+      // If we got results, make sure we're using them
+      if (result.data?.images && result.data.images.length > 0) {
+        console.log('✅ AI verification successful, using AI images');
+        setAllImagesFailed(false);
+        onImageLoad?.(); // Notify parent that we have valid images
+      } else {
+        console.log('⚠️ AI verification returned no results');
+      }
     } catch (error) {
       console.error('❌ AI image search refetch failed:', error);
     }
@@ -293,7 +319,7 @@ export function SearchResult({ result, onLinkPress, onImageLoad, onImageError }:
             </TouchableOpacity>
             
             {/* Image source indicator */}
-            {useAiImages && aiImageSearch.data?.images && aiImageSearch.data.images.length > 0 && (
+            {((useAiImages || originalImageFailed) && aiImageSearch.data?.images && aiImageSearch.data.images.length > 0) && (
               <View style={styles.imageSourceBadge}>
                 <Text style={styles.imageSourceText}>
                   {aiImageSearch.data.images[Math.min(currentImageIndex, aiImageSearch.data.images.length - 1)]?.source === 'AI Generated' ? '🤖 AI' : '✓ Verified'}
@@ -331,10 +357,10 @@ export function SearchResult({ result, onLinkPress, onImageLoad, onImageError }:
           </Text>
           
           {/* Show image info if available */}
-          {aiImageSearch.data?.images && aiImageSearch.data.images.length > 0 && (
+          {((useAiImages || originalImageFailed) && aiImageSearch.data?.images && aiImageSearch.data.images.length > 0) && (
             <View style={styles.aiImageInfo}>
               <Text style={styles.aiImageInfoText}>
-                {aiImageSearch.data.images[currentImageIndex]?.source === 'AI Generated' ? 'AI Generated' : 'Verified'} symbol ({currentImageIndex + 1} of {aiImageSearch.data.images.length})
+                {aiImageSearch.data.images[Math.min(currentImageIndex, aiImageSearch.data.images.length - 1)]?.source === 'AI Generated' ? 'AI Generated' : 'Verified'} symbol ({Math.min(currentImageIndex, aiImageSearch.data.images.length - 1) + 1} of {aiImageSearch.data.images.length})
               </Text>
               <Text style={styles.aiImageDescription}>
                 {imageDescription}
@@ -349,8 +375,8 @@ export function SearchResult({ result, onLinkPress, onImageLoad, onImageError }:
             style={styles.linkButton}
             onPress={() => {
               // Use AI image source if available, otherwise use original
-              const sourceUrl = aiImageSearch.data?.images && aiImageSearch.data.images.length > 0 
-                ? aiImageSearch.data.images[currentImageIndex]?.source || result.sourceUrl
+              const sourceUrl = ((useAiImages || originalImageFailed) && aiImageSearch.data?.images && aiImageSearch.data.images.length > 0)
+                ? aiImageSearch.data.images[Math.min(currentImageIndex, aiImageSearch.data.images.length - 1)]?.source || result.sourceUrl
                 : result.sourceUrl;
               onLinkPress(sourceUrl);
             }}
