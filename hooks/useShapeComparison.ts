@@ -45,6 +45,15 @@ export function useShapeComparison() {
     !isComparing
     // AI verification handles image fallbacks, so we don't require strict image loading
   );
+  
+  console.log('canCompare check:', {
+    selection1: !!selection1,
+    selection2: !!selection2,
+    selectedSearchResult: !!selectedSearchResult,
+    isSearching,
+    isComparing,
+    canCompare
+  });
 
   const resetSelections = () => {
     setSelection2(null);
@@ -94,7 +103,13 @@ export function useShapeComparison() {
       
       // Convert the tRPC response format to our expected format
       const searchResults = result.images
-        .filter(img => img.url && img.description && img.relevanceScore >= 90) // Only high-relevance results
+        .filter(img => {
+          const isValid = img.url && img.description && img.relevanceScore >= 85; // Lower threshold for more results
+          if (!isValid) {
+            console.log('Filtered out invalid image:', img);
+          }
+          return isValid;
+        })
         .map(img => ({
           name: img.description.includes('(') ? 
             img.description.split('(')[0].trim() : // Extract name before parentheses
@@ -153,7 +168,13 @@ export function useShapeComparison() {
       
       // Convert the tRPC response format to our expected format
       const searchResults = result.images
-        .filter(img => img.url && img.description && img.relevanceScore >= 90) // Only high-relevance results
+        .filter(img => {
+          const isValid = img.url && img.description && img.relevanceScore >= 85; // Lower threshold for more results
+          if (!isValid) {
+            console.log('Filtered out invalid custom search image:', img);
+          }
+          return isValid;
+        })
         .map(img => ({
           name: img.description.includes('(') ? 
             img.description.split('(')[0].trim() : // Extract name before parentheses

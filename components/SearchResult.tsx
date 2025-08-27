@@ -179,35 +179,45 @@ export function SearchResult({ result, onLinkPress, onImageLoad, onImageError }:
       imageUrlToUse = aiImage.url;
       imageDescription = aiImage.description;
       imageSource = aiImage.source;
-      console.log('Using AI image:', { url: imageUrlToUse, description: imageDescription, source: imageSource });
+      console.log('✅ Using AI image:', { url: imageUrlToUse, description: imageDescription, source: imageSource });
     }
   } else if (originalImageFailed && !useAiImages && symbolImages.length > 0) {
     // Fallback to curated images only if original failed and not using AI
     imageUrlToUse = currentImageUrl;
-    console.log('Using curated fallback image:', imageUrlToUse);
+    console.log('✅ Using curated fallback image:', imageUrlToUse);
+  }
+  
+  // Validate image URL
+  if (!imageUrlToUse || imageUrlToUse.trim() === '') {
+    console.warn('⚠️ No valid image URL available');
+    setAllImagesFailed(true);
   }
 
   // Update AI definition when available and auto-enable AI images if we have good results
   useEffect(() => {
     if (aiImageSearch.data?.aiDefinition) {
       setAiDefinition(aiImageSearch.data.aiDefinition);
+      console.log('✅ AI definition updated:', aiImageSearch.data.aiDefinition);
     }
     
-    // Auto-enable AI images if we have high-quality AI results and original image failed or is poor quality
+    // Auto-enable AI images if we have high-quality AI results
     if (aiImageSearch.data?.images && aiImageSearch.data.images.length > 0) {
+      console.log(`🤖 AI search returned ${aiImageSearch.data.images.length} images`);
+      
       const hasHighQualityAiImages = aiImageSearch.data.images.some(img => 
-        img.relevanceScore >= 95 && 
-        img.url.includes('wikimedia.org')
+        img.relevanceScore >= 90 && 
+        (img.url.includes('wikimedia.org') || img.url.includes('upload.wikimedia.org'))
       );
       
-      // Auto-switch to AI images if we have high-quality results
-      if (hasHighQualityAiImages && !useAiImages) {
-        console.log('Auto-enabling AI images due to high-quality results');
+      // Auto-switch to AI images if we have high-quality results or original failed
+      if ((hasHighQualityAiImages || originalImageFailed) && !useAiImages) {
+        console.log('✅ Auto-enabling AI images due to high-quality results or original failure');
         setUseAiImages(true);
         setCurrentImageIndex(0);
+        setAllImagesFailed(false);
       }
     }
-  }, [aiImageSearch.data, useAiImages]);
+  }, [aiImageSearch.data, useAiImages, originalImageFailed]);
 
   const handleImageError = () => {
     console.log('Selected symbol image failed to load:', imageUrlToUse);
@@ -270,14 +280,20 @@ export function SearchResult({ result, onLinkPress, onImageLoad, onImageError }:
       if (result.data?.images && result.data.images.length > 0) {
         console.log('✅ AI verification successful, using AI images');
         setAllImagesFailed(false);
-        onImageLoad?.(); // Notify parent that we have valid images
+        
+        // Validate first AI image
+        const firstAiImage = result.data.images[0];
+        if (firstAiImage?.url) {
+          console.log('✅ First AI image URL valid:', firstAiImage.url);
+          onImageLoad?.(); // Notify parent that we have valid images
+        }
       } else {
         console.log('⚠️ AI verification returned no results');
-        // Don't set allImagesFailed here, let the image loading handle it
+        setAllImagesFailed(true);
       }
     } catch (error) {
       console.error('❌ AI image search refetch failed:', error);
-      // Don't set allImagesFailed here, let the image loading handle it
+      setAllImagesFailed(true);
     }
   };
 
@@ -293,10 +309,13 @@ export function SearchResult({ result, onLinkPress, onImageLoad, onImageError }:
               style={styles.image}
               resizeMode="cover"
               onLoad={() => {
-                console.log('Selected symbol image loaded successfully:', imageUrlToUse);
+                console.log('✅ Selected symbol image loaded successfully:', imageUrlToUse);
                 setAllImagesFailed(false);
                 if (imageUrlToUse === result.imageUrl) {
                   setOriginalImageFailed(false);
+                  console.log('✅ Original image loaded successfully');
+                } else {
+                  console.log('✅ AI/Fallback image loaded successfully');
                 }
                 onImageLoad?.(); // Notify parent that image loaded successfully
               }}

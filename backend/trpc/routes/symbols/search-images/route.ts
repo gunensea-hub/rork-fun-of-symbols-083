@@ -49,6 +49,7 @@ export const searchImagesProcedure = publicProcedure
       // First try AI search with better error handling
       let aiSearchResult = null;
       try {
+        console.log('🤖 Starting AI search for:', { symbolName, category });
         const response = await fetch('https://toolkit.rork.com/text/llm/', {
           method: 'POST',
           headers: {
@@ -65,20 +66,21 @@ RULES:
 2. Provide REAL symbols that actually exist
 3. Each symbol must have a working Wikipedia Commons image
 4. Return valid JSON format
+5. Use high relevance scores (90-100) for exact matches
 
 For "${category}" category, find specific examples:
-- Star clusters: Messier 13, Pleiades, Orion Nebula
-- Chemical formulas: H2O, CO2, CH4, NaCl
-- Ancient symbols: Eye of Horus, Ankh, Ouroboros
-- Atomic structures: Hydrogen atom, Bohr model
-- Star maps: Orion, Ursa Major, Cassiopeia
+- Star clusters: Messier 13, Pleiades, Orion Nebula, Helix Nebula, Crab Nebula
+- Chemical formulas: H2O, CO2, CH4, NaCl, NH3
+- Ancient symbols: Eye of Horus, Ankh, Ouroboros, Yin Yang, Pentagram
+- Atomic structures: Hydrogen atom, Bohr model, Carbon orbitals
+- Star maps: Orion, Ursa Major, Cassiopeia, Leo, Draco
 
 Return format:
 {
   "images": [
     {
       "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/...",
-      "description": "Specific symbol name",
+      "description": "Specific symbol name with details",
       "source": "https://en.wikipedia.org/wiki/...",
       "relevanceScore": 95
     }
@@ -88,7 +90,7 @@ Return format:
               },
               {
                 role: 'user',
-                content: `Find 3-5 REAL symbols for category "${category}" with working Wikipedia Commons images. Symbol context: ${symbolDescription}`
+                content: `Find 3-5 REAL symbols for category "${category}" with working Wikipedia Commons images. Symbol context: ${symbolDescription}. Focus on well-known, documented symbols.`
               }
             ]
           }),
@@ -128,8 +130,8 @@ Return format:
                          img.description && 
                          img.source && 
                          typeof img.relevanceScore === 'number' &&
-                         img.relevanceScore >= 85 && 
-                         img.url.includes('wikimedia.org');
+                         img.relevanceScore >= 80 && // Lower threshold
+                         (img.url.includes('wikimedia.org') || img.url.includes('upload.wikimedia.org'));
           if (!isValid) {
             console.log('Invalid AI image filtered out:', img);
           }

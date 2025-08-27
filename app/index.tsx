@@ -489,7 +489,8 @@ export default function ShapeComparisonScreen() {
           </View>
         )}
 
-        {canCompare && (
+        {/* Compare Button - Show when we have selections and a selected result */}
+        {(selection1 && selection2 && selectedSearchResult) && (
           <Animated.View style={Platform.OS === 'web' ? {} : {
             transform: [
               { translateY: compareButtonFloat },
@@ -505,7 +506,8 @@ export default function ShapeComparisonScreen() {
                 (isComparing || !termsAccepted) && styles.compareButtonDisabled
               ]}
               onPress={handleCompare}
-              disabled={isComparing || !termsAccepted || !canCompare}
+              disabled={isComparing || !termsAccepted}
+              testID="compare-button"
             >
               {isComparing ? (
                 <>
@@ -516,10 +518,7 @@ export default function ShapeComparisonScreen() {
                 <>
                   <ArrowRight size={20} color="white" />
                   <Text style={styles.compareButtonText}>
-                    {!termsAccepted ? 'Accept Terms to Compare' : 
-                     !selectedSearchResult ? 'Select Symbol First' :
-                     !selection2 ? 'Select Second Shape' :
-                     'Compare Shapes'}
+                    {!termsAccepted ? 'Accept Terms to Compare' : 'Compare Shapes'}
                   </Text>
                 </>
               )}
