@@ -59,14 +59,15 @@ export const searchImagesProcedure = publicProcedure
             messages: [
               {
                 role: 'system',
-                content: `You are an expert symbol researcher. Find REAL, SPECIFIC symbols with verified Wikipedia Commons URLs.
+                content: `You are an expert symbol researcher and historian. Provide comprehensive information about symbols with detailed explanations, historical context, and reliable sources.
 
 RULES:
-1. ONLY use Wikipedia Commons URLs: https://upload.wikimedia.org/wikipedia/commons/
-2. Provide REAL symbols that actually exist
-3. Each symbol must have a working Wikipedia Commons image
-4. Return valid JSON format
+1. ONLY use verified Wikipedia Commons URLs: https://upload.wikimedia.org/wikipedia/commons/
+2. Provide REAL symbols that actually exist with historical accuracy
+3. Include detailed explanations with historical context, meaning, and usage
+4. Add reliable source links (Wikipedia, Encyclopedia Britannica, academic sources)
 5. Use high relevance scores (90-100) for exact matches
+6. Format descriptions like encyclopedia entries with rich detail
 
 For "${category}" category, find specific examples:
 - Star clusters: Messier 13, Pleiades, Orion Nebula, Helix Nebula, Crab Nebula
@@ -80,35 +81,39 @@ Return format:
   "images": [
     {
       "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/...",
-      "description": "Specific symbol name with details",
+      "description": "Symbol Name - Comprehensive description with historical context, meaning, usage, and cultural significance. Include details about origins, symbolism, and common sources like Encyclopedia Britannica, academic references, etc.",
       "source": "https://en.wikipedia.org/wiki/...",
       "relevanceScore": 95
     }
   ],
-  "aiDefinition": "Brief definition"
+  "aiDefinition": "Comprehensive definition with historical and cultural context"
 }`
               },
               {
                 role: 'user',
-                content: `Find detailed information about "${symbolName}" with image and explanation. Include:
+                content: `Find comprehensive information about "${symbolName}" with detailed explanation like an encyclopedia entry. Include:
+
 1. REAL Wikipedia Commons image URL (https://upload.wikimedia.org/wikipedia/commons/...)
-2. Detailed explanation with historical context
-3. Common sources and references
-4. Source links to Wikipedia or reliable sources
+2. Comprehensive explanation with historical context, meaning, and cultural significance
+3. Origins, mythology, and usage throughout history
+4. Common sources and references (Encyclopedia Britannica, academic sources, etc.)
+5. Source links to Wikipedia or reliable educational sources
 
 Symbol context: ${symbolDescription}
 Category: ${category}
 
-Example format:
+Provide rich, detailed descriptions like this example:
 {
   "images": [{
-    "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/...",
-    "description": "Eye of Horus - Ancient Egyptian symbol of protection, royal power, and good health. Also known as the wedjat, it represents the eye of the falcon-headed god Horus. According to myth, Horus lost his left eye in a battle with Set, but it was magically restored by Thoth. The symbol was widely used in ancient Egyptian art and jewelry as an amulet for protection.",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b4/Eye_of_Horus_bw.svg/512px-Eye_of_Horus_bw.svg.png",
+    "description": "Eye of Horus - Ancient Egyptian symbol of protection, royal power, and good health. Also known as the wedjat, udjat, or Wadjet, it represents the eye of the falcon-headed god Horus. According to Egyptian mythology, Horus lost his left eye in a battle with Set, but it was magically restored by Thoth. This restoration came to symbolize rejuvenation and wholeness. The Eye was popularly used in amulets, funerary art, and temple decorations to invoke its protective and healing powers. Common sources: Encyclopedia Britannica, Egypt Tours Portal, Wikipedia, Ancient History Encyclopedia.",
     "source": "https://en.wikipedia.org/wiki/Eye_of_Horus",
-    "relevanceScore": 98
+    "relevanceScore": 100
   }],
-  "aiDefinition": "The Eye of Horus is one of the most recognizable symbols from ancient Egypt, representing protection, healing, and royal power. It appears frequently in Egyptian mythology and was commonly used as a protective amulet."
-}`
+  "aiDefinition": "The Eye of Horus (wedjat) is one of the most recognizable symbols from ancient Egypt, representing protection, healing, restoration, and royal power. It appears frequently in Egyptian mythology and was commonly used as a protective amulet throughout ancient Egyptian civilization."
+}
+
+Provide similar comprehensive detail for the requested symbol.`
               }
             ]
           }),
@@ -205,7 +210,7 @@ function getSpecificSymbolMatch(symbolName: string, symbolDescription: string) {
     'eye of horus': [
       {
         url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b4/Eye_of_Horus_bw.svg/512px-Eye_of_Horus_bw.svg.png',
-        description: 'Eye of Horus - Ancient Egyptian symbol of protection, royal power, and good health. Also known as the wedjat, it represents the eye of the falcon-headed god Horus. According to myth, Horus lost his left eye in a battle with Set, but it was magically restored by Thoth. The symbol was widely used in ancient Egyptian art and jewelry as an amulet for protection. Common sources: Encyclopedia Britannica, Egypt Tours Portal, Wikipedia.',
+        description: 'Eye of Horus - Ancient Egyptian symbol of protection, royal power, and good health. Also known as the wedjat, udjat, or Wadjet, it represents the eye of the falcon-headed god Horus. According to Egyptian mythology, Horus lost his left eye in a battle with Set, but it was magically restored—often by the gods Hathor or Thoth. This restoration came to symbolize rejuvenation and wholeness. The Eye was popularly used in amulets, funerary art, and temple decorations to invoke its protective and healing powers. Common sources: Encyclopedia Britannica, Egypt Tours Portal, Wikipedia, Ancient History Encyclopedia.',
         source: 'https://en.wikipedia.org/wiki/Eye_of_Horus',
         relevanceScore: 100
       }
@@ -221,7 +226,7 @@ function getSpecificSymbolMatch(symbolName: string, symbolDescription: string) {
     'ankh': [
       {
         url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/58/Ankh.svg/512px-Ankh.svg.png',
-        description: 'Ankh - Ancient Egyptian symbol of life, also known as the key of life or the key of the Nile. It represents the concept of eternal life and was often carried by Egyptian gods and pharaohs. The symbol combines a cross with a loop at the top, symbolizing the union of opposites and the eternal cycle of life and death. Common sources: Encyclopedia Britannica, Ancient History Encyclopedia, Wikipedia.',
+        description: 'Ankh - Ancient Egyptian symbol of life, also known as the key of life or the key of the Nile. It represents the concept of eternal life and was often carried by Egyptian gods and pharaohs in hieroglyphic depictions. The symbol combines a cross with a loop at the top, symbolizing the union of opposites and the eternal cycle of life and death. In Egyptian art, gods are often shown holding the ankh to someone\'s lips, symbolizing the breath of life. The ankh was also used in Christian Coptic art as a symbol of eternal life through Christ. Common sources: Encyclopedia Britannica, Ancient History Encyclopedia, Wikipedia, Egyptology studies.',
         source: 'https://en.wikipedia.org/wiki/Ankh',
         relevanceScore: 100
       }
@@ -229,7 +234,7 @@ function getSpecificSymbolMatch(symbolName: string, symbolDescription: string) {
     'ouroboros': [
       {
         url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/7/71/Serpiente_alquimica.jpg/512px-Serpiente_alquimica.jpg',
-        description: 'Ouroboros - Ancient Symbol of Eternal Cycle',
+        description: 'Ouroboros - Ancient symbol depicting a serpent or dragon eating its own tail, representing the eternal cycle of life, death, and rebirth. The symbol appears in various cultures including ancient Egypt, Greece, and Norse mythology. In alchemy, it represents the cyclical nature of the universe and the unity of all things. The ouroboros symbolizes self-reflexivity, eternal return, and the idea that the end is the beginning. It has been used in Gnosticism, Hermeticism, and modern psychology (Carl Jung) to represent the integration of opposites. Common sources: Encyclopedia Britannica, Mythology studies, Wikipedia, Alchemical texts.',
         source: 'https://en.wikipedia.org/wiki/Ouroboros',
         relevanceScore: 100
       }
@@ -237,7 +242,7 @@ function getSpecificSymbolMatch(symbolName: string, symbolDescription: string) {
     'yin yang': [
       {
         url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Yin_yang.svg/512px-Yin_yang.svg.png',
-        description: 'Yin Yang - Ancient Chinese Symbol of Balance',
+        description: 'Yin Yang - Ancient Chinese symbol representing the concept of dualism in Chinese philosophy, describing how seemingly opposite forces may actually be complementary and interconnected in the natural world. Yin (dark) represents femininity, passivity, darkness, and earth, while Yang (light) represents masculinity, activity, light, and heaven. The symbol shows that within each force lies the seed of its opposite, illustrating the dynamic balance of all existence. Central to Taoism and traditional Chinese medicine, it emphasizes harmony and the interdependence of opposites. Common sources: Encyclopedia Britannica, Chinese Philosophy texts, Wikipedia, Taoist literature.',
         source: 'https://en.wikipedia.org/wiki/Yin_and_yang',
         relevanceScore: 100
       }
@@ -245,7 +250,7 @@ function getSpecificSymbolMatch(symbolName: string, symbolDescription: string) {
     'pentagram': [
       {
         url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/63/Pentagram_green.svg/512px-Pentagram_green.svg.png',
-        description: 'Pentagram - Ancient Geometric Symbol',
+        description: 'Pentagram - Ancient five-pointed star symbol with deep mathematical and spiritual significance. Used by the Pythagoreans as a symbol of mathematical perfection and the golden ratio, it represents the five elements (earth, air, fire, water, spirit) in various traditions. In Christianity, it symbolized the five wounds of Christ, while in medieval times it was used as a protective symbol against evil. The pentagram appears in Islamic art, Jewish mysticism (Kabbalah), and modern Wiccan practices. Its geometric properties include the golden ratio and perfect proportions found throughout nature. Common sources: Encyclopedia Britannica, Mathematical studies, Wikipedia, Religious symbolism texts.',
         source: 'https://en.wikipedia.org/wiki/Pentagram',
         relevanceScore: 100
       }
@@ -253,7 +258,7 @@ function getSpecificSymbolMatch(symbolName: string, symbolDescription: string) {
     'water molecule': [
       {
         url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b5/Water_molecule_3D.svg/256px-Water_molecule_3D.svg.png',
-        description: 'Water Molecule (H2O) - The most essential compound for life on Earth. Water consists of two hydrogen atoms covalently bonded to one oxygen atom, forming a bent molecular geometry with a bond angle of approximately 104.5°. This unique structure gives water its polar properties, enabling it to dissolve many substances and participate in hydrogen bonding. Common sources: Chemistry textbooks, NIST, Wikipedia.',
+        description: 'Water Molecule (H2O) - The most essential compound for life on Earth, consisting of two hydrogen atoms covalently bonded to one oxygen atom. The molecule exhibits a bent molecular geometry with a bond angle of approximately 104.5° due to the two lone pairs of electrons on oxygen. This unique angular structure gives water its polar properties, enabling it to dissolve many ionic and polar substances, earning it the title "universal solvent." Water\'s ability to form hydrogen bonds leads to its unique properties: high boiling point, surface tension, and its role in biological processes. Essential for all known forms of life and covering about 71% of Earth\'s surface. Common sources: Chemistry textbooks, NIST database, Wikipedia, Scientific journals.',
         source: 'https://en.wikipedia.org/wiki/Water',
         relevanceScore: 100
       }
@@ -269,7 +274,7 @@ function getSpecificSymbolMatch(symbolName: string, symbolDescription: string) {
     'carbon dioxide': [
       {
         url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8d/Carbon-dioxide-3D-vdW.png/256px-Carbon-dioxide-3D-vdW.png',
-        description: 'Carbon Dioxide (CO2) - Molecular Structure',
+        description: 'Carbon Dioxide (CO2) - A linear triatomic molecule consisting of one carbon atom double-bonded to two oxygen atoms. This colorless gas is naturally present in Earth\'s atmosphere and is essential for photosynthesis in plants. CO2 has a linear molecular geometry with bond angles of 180°, making it a nonpolar molecule despite the polar C=O bonds. It plays a crucial role in the carbon cycle, greenhouse effect, and climate regulation. Produced by cellular respiration, combustion, and volcanic activity, while consumed by plants during photosynthesis. Currently a major focus in climate science due to its role as a greenhouse gas. Common sources: Environmental science textbooks, NOAA, Wikipedia, Climate research papers.',
         source: 'https://en.wikipedia.org/wiki/Carbon_dioxide',
         relevanceScore: 100
       }
@@ -285,7 +290,7 @@ function getSpecificSymbolMatch(symbolName: string, symbolDescription: string) {
     'orion constellation': [
       {
         url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/91/Orion_constellation_map.svg/512px-Orion_constellation_map.svg.png',
-        description: 'Orion Constellation Map',
+        description: 'Orion Constellation - One of the most recognizable constellations in the night sky, named after the hunter in Greek mythology. Located on the celestial equator, Orion is visible worldwide and contains some of the brightest stars including Betelgeuse (red supergiant) and Rigel (blue supergiant). The constellation features the famous "Orion\'s Belt" - three aligned stars (Alnitak, Alnilam, and Mintaka) that have served as navigation aids throughout history. Orion contains the Orion Nebula (M42), a stellar nursery where new stars are born. The constellation has been recognized by virtually every culture, with variations in mythology from the Greek hunter to the Lakota Hand constellation. Common sources: Astronomy textbooks, NASA, Wikipedia, Star atlases.',
         source: 'https://en.wikipedia.org/wiki/Orion_(constellation)',
         relevanceScore: 100
       }
@@ -293,7 +298,7 @@ function getSpecificSymbolMatch(symbolName: string, symbolDescription: string) {
     'pleiades': [
       {
         url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/4e/Pleiades_large.jpg/512px-Pleiades_large.jpg',
-        description: 'Pleiades Star Cluster (Seven Sisters)',
+        description: 'Pleiades Star Cluster (Seven Sisters) - An open star cluster containing hot B-type stars formed from the same molecular cloud approximately 100 million years ago. Located in the constellation Taurus, the cluster is among the nearest star clusters to Earth at about 444 light-years away. While called the "Seven Sisters" after the seven daughters of Atlas in Greek mythology, the cluster actually contains over 1,000 stars. The brightest stars are easily visible to the naked eye and have been recognized by cultures worldwide - known as Subaru in Japan, Matariki in Māori culture, and the Seven Stars in various traditions. The cluster is surrounded by reflection nebulae, creating the beautiful blue haze visible in photographs. Common sources: Astronomy textbooks, NASA, Wikipedia, Stellar catalogs.',
         source: 'https://en.wikipedia.org/wiki/Pleiades',
         relevanceScore: 100
       }
