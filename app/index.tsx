@@ -53,6 +53,8 @@ export default function ShapeComparisonScreen() {
     setSelectedImageLoaded,
     setSelectedImageError,
   } = useShapeComparison();
+  
+
 
   const {
     canPerformComparison,
@@ -233,6 +235,15 @@ export default function ShapeComparisonScreen() {
     await searchForFirstSelection();
   };
 
+  const handleAutoSearch = async () => {
+    if (!selection1) return;
+    
+    console.log('Starting AI auto search for Eye of Horus');
+    
+    // Use the existing search functionality with the specific Eye of Horus query
+    await searchWithCustomQuery('Eye of Horus ancient Egyptian symbol protection');
+  };
+
   const handleCustomSearch = async () => {
     if (!customSearchQuery.trim()) {
       Alert.alert('Error', 'Please enter a search query');
@@ -383,8 +394,9 @@ export default function ShapeComparisonScreen() {
                     styles.primarySearchButton,
                     !selection1 && styles.disabledSearchButton
                   ]}
-                  onPress={handleSearch}
+                  onPress={handleAutoSearch}
                   disabled={!selection1 || isSearching}
+                  testID="auto-search-button"
                 >
                   <Search size={20} color={!selection1 ? "#64748b" : "white"} />
                   <Text style={[
@@ -401,13 +413,32 @@ export default function ShapeComparisonScreen() {
                     styles.secondarySearchButton,
                     !selection1 && styles.disabledSecondarySearchButton
                   ]}
-                  onPress={toggleSearchMode}
+                  onPress={handleSearch}
                   disabled={!selection1 || isSearching}
+                  testID="manual-search-button"
                 >
-                  <Edit3 size={20} color={!selection1 ? "#64748b" : "#667eea"} />
+                  <Search size={20} color={!selection1 ? "#64748b" : "#667eea"} />
                   <Text style={[
                     styles.secondarySearchButtonText,
                     !selection1 && styles.disabledSecondarySearchButtonText
+                  ]}>
+                    Manual Search
+                  </Text>
+                </TouchableOpacity>
+                
+                <TouchableOpacity
+                  style={[
+                    styles.searchButton, 
+                    styles.tertiarySearchButton,
+                    !selection1 && styles.disabledTertiarySearchButton
+                  ]}
+                  onPress={toggleSearchMode}
+                  disabled={!selection1 || isSearching}
+                >
+                  <Edit3 size={20} color={!selection1 ? "#64748b" : "#f97316"} />
+                  <Text style={[
+                    styles.tertiarySearchButtonText,
+                    !selection1 && styles.disabledTertiarySearchButtonText
                   ]}>
                     Custom Search
                   </Text>
@@ -805,7 +836,7 @@ const styles = StyleSheet.create({
   searchButtonsContainer: {
     gap: 12,
     position: 'relative',
-    height: 120,
+    height: 180,
   },
   searchButton: {
     flexDirection: 'row',
@@ -838,7 +869,7 @@ const styles = StyleSheet.create({
   secondarySearchButton: {
     backgroundColor: 'white',
     borderWidth: 8,
-    borderColor: '#f97316',
+    borderColor: '#10b981',
     borderRadius: 12,
     borderTopLeftRadius: 28,
     borderTopRightRadius: 4,
@@ -855,14 +886,39 @@ const styles = StyleSheet.create({
     top: 60,
     right: 15,
   },
+  tertiarySearchButton: {
+    backgroundColor: 'white',
+    borderWidth: 8,
+    borderColor: '#f97316',
+    borderRadius: 12,
+    borderTopLeftRadius: 4,
+    borderTopRightRadius: 28,
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 2,
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    paddingTop: 6,
+    paddingBottom: 16,
+    transform: [{ rotate: '6deg' }, { skewX: '-1deg' }],
+    minWidth: 120,
+    maxWidth: 180,
+    position: 'absolute',
+    top: 120,
+    left: 25,
+  },
   searchButtonText: {
     color: 'white',
     fontSize: 18,
     fontWeight: '600',
   },
   secondarySearchButtonText: {
-    color: '#667eea',
+    color: '#10b981',
     fontSize: 16,
+    fontWeight: '600',
+  },
+  tertiarySearchButtonText: {
+    color: '#f97316',
+    fontSize: 14,
     fontWeight: '600',
   },
   customSearchContainer: {
@@ -1154,6 +1210,14 @@ const styles = StyleSheet.create({
     opacity: 0.6,
   },
   disabledSecondarySearchButtonText: {
+    color: '#9ca3af',
+  },
+  disabledTertiarySearchButton: {
+    backgroundColor: '#f3f4f6',
+    borderColor: '#d1d5db',
+    opacity: 0.6,
+  },
+  disabledTertiarySearchButtonText: {
     color: '#9ca3af',
   },
 });
