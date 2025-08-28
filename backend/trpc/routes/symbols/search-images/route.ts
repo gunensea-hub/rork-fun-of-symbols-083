@@ -90,7 +90,25 @@ Return format:
               },
               {
                 role: 'user',
-                content: `Find 3-5 REAL symbols for category "${category}" with working Wikipedia Commons images. Symbol context: ${symbolDescription}. Focus on well-known, documented symbols.`
+                content: `Find detailed information about "${symbolName}" with image and explanation. Include:
+1. REAL Wikipedia Commons image URL (https://upload.wikimedia.org/wikipedia/commons/...)
+2. Detailed explanation with historical context
+3. Common sources and references
+4. Source links to Wikipedia or reliable sources
+
+Symbol context: ${symbolDescription}
+Category: ${category}
+
+Example format:
+{
+  "images": [{
+    "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/...",
+    "description": "Eye of Horus - Ancient Egyptian symbol of protection, royal power, and good health. Also known as the wedjat, it represents the eye of the falcon-headed god Horus. According to myth, Horus lost his left eye in a battle with Set, but it was magically restored by Thoth. The symbol was widely used in ancient Egyptian art and jewelry as an amulet for protection.",
+    "source": "https://en.wikipedia.org/wiki/Eye_of_Horus",
+    "relevanceScore": 98
+  }],
+  "aiDefinition": "The Eye of Horus is one of the most recognizable symbols from ancient Egypt, representing protection, healing, and royal power. It appears frequently in Egyptian mythology and was commonly used as a protective amulet."
+}`
               }
             ]
           }),
@@ -187,7 +205,7 @@ function getSpecificSymbolMatch(symbolName: string, symbolDescription: string) {
     'eye of horus': [
       {
         url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b4/Eye_of_Horus_bw.svg/512px-Eye_of_Horus_bw.svg.png',
-        description: 'Eye of Horus - Ancient Egyptian Protection Symbol',
+        description: 'Eye of Horus - Ancient Egyptian symbol of protection, royal power, and good health. Also known as the wedjat, it represents the eye of the falcon-headed god Horus. According to myth, Horus lost his left eye in a battle with Set, but it was magically restored by Thoth. The symbol was widely used in ancient Egyptian art and jewelry as an amulet for protection. Common sources: Encyclopedia Britannica, Egypt Tours Portal, Wikipedia.',
         source: 'https://en.wikipedia.org/wiki/Eye_of_Horus',
         relevanceScore: 100
       }
@@ -203,7 +221,7 @@ function getSpecificSymbolMatch(symbolName: string, symbolDescription: string) {
     'ankh': [
       {
         url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/58/Ankh.svg/512px-Ankh.svg.png',
-        description: 'Ankh - Ancient Egyptian Symbol of Life',
+        description: 'Ankh - Ancient Egyptian symbol of life, also known as the key of life or the key of the Nile. It represents the concept of eternal life and was often carried by Egyptian gods and pharaohs. The symbol combines a cross with a loop at the top, symbolizing the union of opposites and the eternal cycle of life and death. Common sources: Encyclopedia Britannica, Ancient History Encyclopedia, Wikipedia.',
         source: 'https://en.wikipedia.org/wiki/Ankh',
         relevanceScore: 100
       }
@@ -235,7 +253,7 @@ function getSpecificSymbolMatch(symbolName: string, symbolDescription: string) {
     'water molecule': [
       {
         url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b5/Water_molecule_3D.svg/256px-Water_molecule_3D.svg.png',
-        description: 'Water Molecule (H2O) - 3D Structure',
+        description: 'Water Molecule (H2O) - The most essential compound for life on Earth. Water consists of two hydrogen atoms covalently bonded to one oxygen atom, forming a bent molecular geometry with a bond angle of approximately 104.5°. This unique structure gives water its polar properties, enabling it to dissolve many substances and participate in hydrogen bonding. Common sources: Chemistry textbooks, NIST, Wikipedia.',
         source: 'https://en.wikipedia.org/wiki/Water',
         relevanceScore: 100
       }
