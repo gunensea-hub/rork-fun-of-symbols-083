@@ -136,17 +136,36 @@ export function ComparisonResult({ result, onLinkPress, onCompareAgain }: Compar
   );
 
   const symbolImages = getSymbolImages(result.targetName);
-  const currentImageUrl = symbolImages[currentImageIndex];
   
-  // Determine which image to use
+  // Determine which image to use - prioritize working images
   let imageUrlToUse = result.targetImageUrl;
-  if (originalImageFailed || useAiImages) {
-    if (aiImageSearch.data?.images && aiImageSearch.data.images.length > 0) {
-      const aiImageIndex = Math.min(currentImageIndex, aiImageSearch.data.images.length - 1);
-      imageUrlToUse = aiImageSearch.data.images[aiImageIndex]?.url || currentImageUrl;
-    } else {
-      imageUrlToUse = currentImageUrl;
+  let imageDescription = result.targetDescription;
+  let imageSource = 'Original Source';
+  
+  // Always prefer AI curated images if available and enabled
+  if (useAiImages && aiImageSearch.data?.images && aiImageSearch.data.images.length > 0) {
+    const aiImageIndex = Math.min(currentImageIndex, aiImageSearch.data.images.length - 1);
+    const aiImage = aiImageSearch.data.images[aiImageIndex];
+    if (aiImage?.url) {
+      imageUrlToUse = aiImage.url;
+      imageDescription = aiImage.description || result.targetDescription;
+      imageSource = aiImage.source || 'AI Curated';
+      console.log('✅ Using AI curated image:', imageUrlToUse);
     }
+  } else if (originalImageFailed || !result.targetImageUrl) {
+    // Fallback to curated images if original failed or doesn't exist
+    if (symbolImages && symbolImages.length > 0) {
+      const fallbackIndex = Math.min(currentImageIndex, symbolImages.length - 1);
+      imageUrlToUse = symbolImages[fallbackIndex];
+      imageSource = 'Curated Fallback';
+      console.log('✅ Using curated fallback image:', imageUrlToUse);
+    }
+  }
+  
+  // Validate the final image URL
+  if (!imageUrlToUse || imageUrlToUse.trim() === '') {
+    console.warn('⚠️ No valid image URL available for matched symbol');
+    setAllImagesFailed(true);
   }
 
   // Update AI definition when available
@@ -157,45 +176,90 @@ export function ComparisonResult({ result, onLinkPress, onCompareAgain }: Compar
   }, [aiImageSearch.data?.aiDefinition]);
 
   const handleImageError = () => {
-    console.log('Target image failed to load:', imageUrlToUse);
-    console.log('Is original image:', imageUrlToUse === result.targetImageUrl);
-    console.log('Original image failed flag:', originalImageFailed);
-    console.log('Using AI images:', useAiImages);
+    console.log('❌ Matched symbol image failed to load:', imageUrlToUse);
+    console.log('Current state:', { 
+      isOriginal: imageUrlToUse === result.targetImageUrl,
+      originalImageFailed,
+      useAiImages,
+      currentImageIndex,
+      totalAiImages: aiImageSearch.data?.images?.length || 0,
+      totalCuratedImages: symbolImages?.length || 0
+    });
     
-    // If the original targetImageUrl failed, mark it as failed
+    // If the original targetImageUrl failed, try AI images first
     if (imageUrlToUse === result.targetImageUrl && !originalImageFailed) {
-      console.log('Original target image failed, switching to AI images');
+      console.log('🔄 Original matched symbol image failed, switching to AI images');
       setOriginalImageFailed(true);
+      setUseAiImages(true);
+      setCurrentImageIndex(0);
       return;
     }
     
     // If using AI images, try next AI image
-    if (useAiImages && aiImageSearch.data?.images) {
+    if (useAiImages && aiImageSearch.data?.images && aiImageSearch.data.images.length > 0) {
       const nextIndex = currentImageIndex + 1;
-      console.log(`Trying next AI image for target: ${nextIndex}/${aiImageSearch.data.images.length}`);
+      console.log(`🔄 Trying next AI image for matched symbol: ${nextIndex}/${aiImageSearch.data.images.length}`);
       if (nextIndex < aiImageSearch.data.images.length) {
         setCurrentImageIndex(nextIndex);
+        return;
+      } else {
+        // All AI images failed, switch to curated fallbacks
+        console.log('🔄 All AI images failed, switching to curated fallbacks');
+        setUseAiImages(false);
+        setCurrentImageIndex(0);
         return;
       }
     }
     
     // Try next curated image
-    const nextIndex = currentImageIndex + 1;
-    console.log(`Trying next curated image: ${nextIndex}/${symbolImages.length}`);
-    if (nextIndex < symbolImages.length) {
-      setCurrentImageIndex(nextIndex);
-    } else {
-      console.log('All images failed, showing placeholder');
-      setAllImagesFailed(true);
+    if (!useAiImages && symbolImages && symbolImages.length > 0) {
+      const nextIndex = currentImageIndex + 1;
+      console.log(`🔄 Trying next curated image for matched symbol: ${nextIndex}/${symbolImages.length}`);
+      if (nextIndex < symbolImages.length) {
+        setCurrentImageIndex(nextIndex);
+        return;
+      }
     }
+    
+    // All images failed
+    console.log('❌ All matched symbol images failed, showing placeholder');
+    setAllImagesFailed(true);
   };
 
-  const handleRefreshImages = () => {
+  const handleRefreshImages = async () => {
+    console.log('🔄 Refreshing matched symbol images - forcing AI search');
+    console.log('Current state before refresh:', { 
+      currentImageIndex, 
+      originalImageFailed, 
+      allImagesFailed, 
+      useAiImages,
+      hasAiImages: aiImageSearch.data?.images?.length || 0
+    });
+    
+    // Reset all states for fresh AI search
     setCurrentImageIndex(0);
     setOriginalImageFailed(false);
     setAllImagesFailed(false);
     setUseAiImages(true);
-    aiImageSearch.refetch();
+    
+    // Force refetch AI images
+    console.log('🤖 Forcing AI image search refetch for matched symbol...');
+    try {
+      const result = await aiImageSearch.refetch();
+      console.log('✅ AI image search completed:', result.data?.images?.length || 0, 'images found');
+      
+      if (result.data?.images && result.data.images.length > 0) {
+        console.log('✅ AI images available for matched symbol');
+        setAllImagesFailed(false);
+      } else {
+        console.log('⚠️ No AI images found, will use curated fallbacks');
+        setUseAiImages(false);
+      }
+    } catch (error) {
+      console.error('❌ AI image search failed:', error);
+      setUseAiImages(false);
+      setAllImagesFailed(false); // Try curated images
+    }
   };
   
   const getSimilarityColor = (score: number) => {
@@ -281,20 +345,24 @@ export function ComparisonResult({ result, onLinkPress, onCompareAgain }: Compar
           
           <Text style={styles.targetName}>{result.targetName}</Text>
           <Text style={styles.targetDescription}>
-            {aiDefinition || result.targetDescription}
+            {aiDefinition || imageDescription || result.targetDescription}
           </Text>
           
-          {/* Show AI image info if available */}
-          {useAiImages && aiImageSearch.data?.images && aiImageSearch.data.images.length > 0 && (
+          {/* Show image source info */}
+          {((useAiImages && aiImageSearch.data?.images && aiImageSearch.data.images.length > 0) || originalImageFailed) && (
             <View style={styles.aiImageInfo}>
               <Text style={styles.aiImageInfoText}>
-                Showing AI-curated image ({currentImageIndex + 1} of {aiImageSearch.data.images.length})
+                {useAiImages && aiImageSearch.data?.images && aiImageSearch.data.images.length > 0
+                  ? `AI-verified image (${Math.min(currentImageIndex, aiImageSearch.data.images.length - 1) + 1} of ${aiImageSearch.data.images.length})`
+                  : `Curated image (${currentImageIndex + 1} of ${symbolImages?.length || 1})`
+                }
               </Text>
-              {aiImageSearch.data.images[currentImageIndex]?.description && (
-                <Text style={styles.aiImageDescription}>
-                  {aiImageSearch.data.images[currentImageIndex].description}
-                </Text>
-              )}
+              <Text style={styles.aiImageDescription}>
+                {imageDescription}
+              </Text>
+              <Text style={styles.sourceText}>
+                Source: {imageSource}
+              </Text>
             </View>
           )}
           
@@ -490,6 +558,13 @@ const styles = StyleSheet.create({
     color: '#ffffff',
     fontSize: 11,
     lineHeight: 16,
+    textAlign: 'center',
+    marginBottom: 4,
+  },
+  sourceText: {
+    color: '#94a3b8',
+    fontSize: 10,
+    fontStyle: 'italic',
     textAlign: 'center',
   },
   targetName: {
