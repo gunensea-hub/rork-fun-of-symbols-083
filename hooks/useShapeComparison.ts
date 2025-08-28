@@ -28,14 +28,14 @@ export interface ComparisonResultType {
 
 export function useShapeComparison() {
   const [selection1, setSelection1] = useState<ShapeOption | null>(null);
-  const [selection2, setSelection2] = useState<ShapeOption | null>(null);
+  const [selection2, setSelection2State] = useState<ShapeOption | null>(null);
   const [searchResults, setSearchResults] = useState<SearchResultsType | null>(null);
   const [selectedSearchResult, setSelectedSearchResult] = useState<SearchResultType | null>(null);
   const [comparisonResult, setComparisonResult] = useState<ComparisonResultType | null>(null);
-  const [isSearching, setIsSearching] = useState(false);
-  const [isComparing, setIsComparing] = useState(false);
-  const [selectedImageLoaded, setSelectedImageLoaded] = useState(false);
-  const [selectedImageError, setSelectedImageError] = useState(false);
+  const [isSearching, setIsSearching] = useState<boolean>(false);
+  const [isComparing, setIsComparing] = useState<boolean>(false);
+  const [selectedImageLoaded, setSelectedImageLoaded] = useState<boolean>(false);
+  const [selectedImageError, setSelectedImageError] = useState<boolean>(false);
 
   const canCompare = Boolean(
     selection1 && 
@@ -43,7 +43,6 @@ export function useShapeComparison() {
     selectedSearchResult && 
     !isSearching && 
     !isComparing
-    // AI verification handles image fallbacks, so we don't require strict image loading
   );
   
   console.log('canCompare check:', {
@@ -55,8 +54,7 @@ export function useShapeComparison() {
     canCompare
   });
 
-  const resetSelections = () => {
-    setSelection2(null);
+  const clearWorkArea = () => {
     setSearchResults(null);
     setSelectedSearchResult(null);
     setComparisonResult(null);
@@ -64,14 +62,15 @@ export function useShapeComparison() {
     setSelectedImageError(false);
   };
 
+  const resetSelections = () => {
+    setSelection2State(null);
+    clearWorkArea();
+  };
+
   const resetAll = () => {
     setSelection1(null);
-    setSelection2(null);
-    setSearchResults(null);
-    setSelectedSearchResult(null);
-    setComparisonResult(null);
-    setSelectedImageLoaded(false);
-    setSelectedImageError(false);
+    setSelection2State(null);
+    clearWorkArea();
   };
 
   const handleSelection1Change = (value: ShapeOption | null) => {
@@ -79,6 +78,11 @@ export function useShapeComparison() {
     if (value !== selection1) {
       resetSelections();
     }
+  };
+
+  const handleSelection2Change = (value: ShapeOption | null) => {
+    setSelection2State(value);
+    clearWorkArea();
   };
 
   const searchForFirstSelection = async (retryCount = 0): Promise<void> => {
@@ -102,9 +106,9 @@ export function useShapeComparison() {
       }
       
       // Convert the tRPC response format to our expected format
-      const searchResults = result.images
+      const mapped = result.images
         .filter(img => {
-          const isValid = img.url && img.description && img.relevanceScore >= 85; // Lower threshold for more results
+          const isValid = !!img.url && !!img.description && (img.relevanceScore ?? 0) >= 85;
           if (!isValid) {
             console.log('Filtered out invalid image:', img);
           }
@@ -112,16 +116,16 @@ export function useShapeComparison() {
         })
         .map(img => ({
           name: img.description.includes('(') ? 
-            img.description.split('(')[0].trim() : // Extract name before parentheses
+            img.description.split('(')[0].trim() :
             img.description.split('.')[0] || 'Unknown Symbol',
           description: img.description,
           imageUrl: img.url,
-          sourceUrl: img.source.startsWith('http') ? img.source : `https://en.wikipedia.org/wiki/${encodeURIComponent(img.source)}`
+          sourceUrl: img.source && img.source.startsWith('http') ? img.source : `https://en.wikipedia.org/wiki/${encodeURIComponent(img.source ?? '')}`
         }));
       
-      console.log('Converted search results:', searchResults);
+      console.log('Converted search results:', mapped);
       setSearchResults({
-        results: searchResults,
+        results: mapped,
         query: selection1
       });
     } catch (error) {
@@ -167,9 +171,9 @@ export function useShapeComparison() {
       }
       
       // Convert the tRPC response format to our expected format
-      const searchResults = result.images
+      const mapped = result.images
         .filter(img => {
-          const isValid = img.url && img.description && img.relevanceScore >= 85; // Lower threshold for more results
+          const isValid = !!img.url && !!img.description && (img.relevanceScore ?? 0) >= 85;
           if (!isValid) {
             console.log('Filtered out invalid custom search image:', img);
           }
@@ -177,16 +181,16 @@ export function useShapeComparison() {
         })
         .map(img => ({
           name: img.description.includes('(') ? 
-            img.description.split('(')[0].trim() : // Extract name before parentheses
+            img.description.split('(')[0].trim() :
             img.description.split('.')[0] || customQuery,
           description: img.description,
           imageUrl: img.url,
-          sourceUrl: img.source.startsWith('http') ? img.source : `https://en.wikipedia.org/wiki/${encodeURIComponent(img.source)}`
+          sourceUrl: img.source && img.source.startsWith('http') ? img.source : `https://en.wikipedia.org/wiki/${encodeURIComponent(img.source ?? '')}`
         }));
       
-      console.log('Converted custom search results:', searchResults);
+      console.log('Converted custom search results:', mapped);
       setSearchResults({
-        results: searchResults,
+        results: mapped,
         query: customQuery
       });
     } catch (error) {
@@ -266,10 +270,10 @@ Return only valid JSON with a specific symbol from the target category and expla
         throw new Error('No completion in response');
       }
       
-      let result;
+      let result: any;
       try {
         // Clean the completion text - remove any markdown formatting
-        let cleanCompletion = data.completion.trim();
+        let cleanCompletion = String(data.completion).trim();
         if (cleanCompletion.startsWith('```json')) {
           cleanCompletion = cleanCompletion.replace(/```json\s*/, '').replace(/```\s*$/, '');
         } else if (cleanCompletion.startsWith('```')) {
@@ -309,9 +313,8 @@ Return only valid JSON with a specific symbol from the target category and expla
     setSelectedSearchResult(result);
     setSelectedImageLoaded(false);
     setSelectedImageError(false);
-    setComparisonResult(null); // Clear previous comparison when selecting new result
+    setComparisonResult(null);
     
-    // Validate image URL immediately
     if (result && (!result.imageUrl || result.imageUrl.trim() === '')) {
       console.warn('Selected result has no valid image URL');
       setSelectedImageError(true);
@@ -322,7 +325,7 @@ Return only valid JSON with a specific symbol from the target category and expla
     selection1,
     selection2,
     setSelection1: handleSelection1Change,
-    setSelection2,
+    setSelection2: handleSelection2Change,
     searchResults,
     selectedSearchResult,
     setSelectedSearchResult: handleSelectedSearchResultChange,
@@ -338,7 +341,6 @@ Return only valid JSON with a specific symbol from the target category and expla
     selectedImageError,
     setSelectedImageLoaded,
     setSelectedImageError,
-    // Helper function to validate if image is relevant and loaded (more lenient for AI fallbacks)
-    isImageValid: selectedSearchResult && (selectedImageLoaded || !selectedImageError),
+    isImageValid: Boolean(selectedSearchResult && (selectedImageLoaded || !selectedImageError)),
   };
 }
