@@ -215,6 +215,85 @@ export function useShapeComparison() {
     }
   };
 
+  const autoSearchWithPrompt = async (promptText: string): Promise<void> => {
+    if (!promptText.trim()) return;
+
+    setIsSearching(true);
+    clearWorkArea();
+
+    try {
+      console.log('AI Auto Search prompt:', promptText);
+
+      const response = await fetch('https://toolkit.rork.com/text/llm/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          messages: [
+            {
+              role: 'system',
+              content:
+                'You are a precise symbol search agent. Return STRICT JSON only. Use verified Wikimedia Commons image URLs and a reliable source URL.'
+            },
+            {
+              role: 'user',
+              content:
+                `${promptText}\n\nReturn JSON with: {"name": string, "description": string, "imageUrl": string, "sourceUrl": string}. Image MUST be a direct https://upload.wikimedia.org/... URL when possible.`
+            }
+          ]
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+      const data = await response.json();
+      if (!data?.completion) throw new Error('Empty AI completion');
+
+      let text = String(data.completion).trim();
+      if (text.startsWith('```json')) {
+        text = text.replace(/```json\s*/,'').replace(/```\s*$/,'');
+      } else if (text.startsWith('```')) {
+        text = text.replace(/```\s*/,'').replace(/```\s*$/,'');
+      }
+      let parsed: { name?: string; description?: string; imageUrl?: string; sourceUrl?: string } = {};
+      try {
+        parsed = JSON.parse(text);
+      } catch (e) {
+        console.error('AI auto parse error', e);
+        throw new Error('Invalid AI JSON');
+      }
+
+      if (!parsed.name || !parsed.description || !parsed.imageUrl || !parsed.sourceUrl) {
+        throw new Error('AI JSON missing fields');
+      }
+
+      const resultItem: SearchResultType = {
+        name: parsed.name,
+        description: parsed.description,
+        imageUrl: parsed.imageUrl,
+        sourceUrl: parsed.sourceUrl,
+      };
+
+      const resultsPayload: SearchResultsType = {
+        results: [resultItem],
+        query: parsed.name,
+      };
+
+      console.log('AI Auto Search mapped result:', resultsPayload);
+      setSearchResults(resultsPayload);
+      setSelectedSearchResult(resultItem);
+    } catch (error) {
+      console.error('AI Auto Search error:', error);
+      Alert.alert(
+        'Auto Search Failed',
+        'Could not get AI result. Please try again or use Manual Search.',
+        [{ text: 'OK' }]
+      );
+    } finally {
+      setIsSearching(false);
+    }
+  };
+
   const performComparison = async (): Promise<void> => {
     if (!selection1 || !selection2 || !selectedSearchResult) return;
 
@@ -342,5 +421,6 @@ Return only valid JSON with a specific symbol from the target category and expla
     setSelectedImageLoaded,
     setSelectedImageError,
     isImageValid: Boolean(selectedSearchResult && (selectedImageLoaded || !selectedImageError)),
+    autoSearchWithPrompt,
   };
 }

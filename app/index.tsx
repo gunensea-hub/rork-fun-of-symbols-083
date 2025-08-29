@@ -13,7 +13,7 @@ import {
   Image,
   Platform,
 } from 'react-native';
-import { Search, ArrowRight, Edit3, CheckSquare, Square, FileText, Settings } from 'lucide-react-native';
+import { Search, ArrowRight, Edit3, CheckSquare, Square, FileText, Settings, Sparkles } from 'lucide-react-native';
 import { useShapeComparison } from '@/hooks/useShapeComparison';
 import { SelectionDropdown } from '@/components/SelectionDropdown';
 import { SearchResult } from '@/components/SearchResult';
@@ -52,6 +52,7 @@ export default function ShapeComparisonScreen() {
     resetAll,
     setSelectedImageLoaded,
     setSelectedImageError,
+    autoSearchWithPrompt,
   } = useShapeComparison();
   
 
@@ -227,10 +228,9 @@ export default function ShapeComparisonScreen() {
 
   const handleAutoSearch = async () => {
     if (!selection1) return;
-    
-    console.log('Starting AI auto search for Eye of Horus');
-    
-    await searchWithCustomQuery('Eye of Horus ancient Egyptian symbol protection');
+    console.log('Starting AI auto search with image + explanation');
+    const prompt = 'show me the eye of horus with image and explanation sentences with the common sources on internet and add source link under the image';
+    await autoSearchWithPrompt(prompt);
   };
 
   const handleCustomSearch = async () => {
@@ -387,12 +387,12 @@ export default function ShapeComparisonScreen() {
                   disabled={!selection1 || isSearching}
                   testID="auto-search-button"
                 >
-                  <Search size={20} color={!selection1 ? '#64748b' : 'white'} />
+                  <Sparkles size={20} color={!selection1 ? '#64748b' : 'white'} />
                   <Text style={[
                     styles.searchButtonText,
                     !selection1 && styles.disabledSearchButtonText
                   ]}>
-                    Auto Search {selection1 || 'Shape'}
+                    AI Auto Search
                   </Text>
                 </TouchableOpacity>
                 
