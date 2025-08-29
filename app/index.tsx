@@ -55,7 +55,6 @@ export default function ShapeComparisonScreen() {
   } = useShapeComparison();
   
 
-
   const {
     canPerformComparison,
     incrementComparisons,
@@ -67,10 +66,8 @@ export default function ShapeComparisonScreen() {
   const [termsAccepted, setTermsAccepted] = useState<boolean>(false);
   const [showTermsModal, setShowTermsModal] = useState<boolean>(false);
   
-  // Animation for flashing colors
   const colorAnimation = useRef(new Animated.Value(0)).current;
   
-  // Simplified animations for web compatibility
   const box1FloatY = useRef(new Animated.Value(0)).current;
   const box1FloatX = useRef(new Animated.Value(0)).current;
   const box1Rotation = useRef(new Animated.Value(0)).current;
@@ -93,7 +90,6 @@ export default function ShapeComparisonScreen() {
   const viewTermsRotation = useRef(new Animated.Value(0)).current;
   
   useEffect(() => {
-    // Only run animations on native platforms to avoid web bundling issues
     if (Platform.OS === 'web') {
       return;
     }
@@ -130,9 +126,7 @@ export default function ShapeComparisonScreen() {
       ).start();
     };
     
-    // Simplified box animations for better performance
     const startBoxAnimations = () => {
-      // Box 1 animations
       Animated.loop(
         Animated.sequence([
           Animated.timing(box1FloatY, {
@@ -156,7 +150,6 @@ export default function ShapeComparisonScreen() {
         })
       ).start();
       
-      // Box 2 animations
       Animated.loop(
         Animated.sequence([
           Animated.timing(box2FloatY, {
@@ -172,7 +165,6 @@ export default function ShapeComparisonScreen() {
         ])
       ).start();
       
-      // Compare button animations
       Animated.loop(
         Animated.sequence([
           Animated.timing(compareButtonFloat, {
@@ -210,7 +202,6 @@ export default function ShapeComparisonScreen() {
       return;
     }
     
-    // Check subscription limits
     if (!canPerformComparison()) {
       const remaining = getRemainingComparisons();
       Alert.alert(
@@ -227,7 +218,6 @@ export default function ShapeComparisonScreen() {
     }
     
     await performComparison();
-    // Increment usage after successful comparison
     await incrementComparisons();
   };
 
@@ -240,7 +230,6 @@ export default function ShapeComparisonScreen() {
     
     console.log('Starting AI auto search for Eye of Horus');
     
-    // Use the existing search functionality with the specific Eye of Horus query
     await searchWithCustomQuery('Eye of Horus ancient Egyptian symbol protection');
   };
 
@@ -398,12 +387,12 @@ export default function ShapeComparisonScreen() {
                   disabled={!selection1 || isSearching}
                   testID="auto-search-button"
                 >
-                  <Search size={20} color={!selection1 ? "#64748b" : "white"} />
+                  <Search size={20} color={!selection1 ? '#64748b' : 'white'} />
                   <Text style={[
                     styles.searchButtonText,
                     !selection1 && styles.disabledSearchButtonText
                   ]}>
-                    Auto Search {selection1 || "Shape"}
+                    Auto Search {selection1 || 'Shape'}
                   </Text>
                 </TouchableOpacity>
                 
@@ -417,7 +406,7 @@ export default function ShapeComparisonScreen() {
                   disabled={!selection1 || isSearching}
                   testID="manual-search-button"
                 >
-                  <Search size={20} color={!selection1 ? "#64748b" : "#667eea"} />
+                  <Search size={20} color={!selection1 ? '#64748b' : '#e5e7eb'} />
                   <Text style={[
                     styles.secondarySearchButtonText,
                     !selection1 && styles.disabledSecondarySearchButtonText
@@ -435,7 +424,7 @@ export default function ShapeComparisonScreen() {
                   onPress={toggleSearchMode}
                   disabled={!selection1 || isSearching}
                 >
-                  <Edit3 size={20} color={!selection1 ? "#64748b" : "#f97316"} />
+                  <Edit3 size={20} color={!selection1 ? '#64748b' : '#f59e0b'} />
                   <Text style={[
                     styles.tertiarySearchButtonText,
                     !selection1 && styles.disabledTertiarySearchButtonText
@@ -520,7 +509,6 @@ export default function ShapeComparisonScreen() {
           </View>
         )}
 
-        {/* Compare Button - Show when we have selections and a selected result */}
         {(selection1 && selection2 && selectedSearchResult) && (
           <Animated.View style={Platform.OS === 'web' ? {} : {
             transform: [
@@ -565,7 +553,6 @@ export default function ShapeComparisonScreen() {
           />
         )}
         
-        {/* Terms and Conditions Section */}
         <Animated.View style={[
           styles.termsSection,
           Platform.OS === 'web' ? {
@@ -611,13 +598,12 @@ export default function ShapeComparisonScreen() {
               style={styles.viewTermsButton}
               onPress={() => setShowTermsModal(true)}
             >
-              <FileText size={16} color="#667eea" />
+              <FileText size={16} color="#e5e7eb" />
               <Text style={styles.viewTermsText}>View Terms</Text>
             </TouchableOpacity>
           </Animated.View>
         </Animated.View>
         
-        {/* Copyright Notice */}
         <View style={styles.copyrightSection}>
           <Text style={styles.copyrightText}>
             Copyright (©) 2024 robotiyee@gmail.com
@@ -793,11 +779,11 @@ const styles = StyleSheet.create({
     left: 10,
     width: '85%',
     zIndex: 3,
-    borderWidth: 8,
-    borderColor: '#ff6b6b',
+    borderWidth: 2,
+    borderColor: '#2a2a2a',
     borderRadius: 16,
-    padding: 4,
-    backgroundColor: 'rgba(255, 107, 107, 0.1)',
+    padding: 8,
+    backgroundColor: '#0b0b0b',
   },
   selectionBox2: {
     position: 'absolute',
@@ -805,124 +791,78 @@ const styles = StyleSheet.create({
     right: 15,
     width: '65%',
     zIndex: 2,
-    borderWidth: 8,
-    borderColor: '#4ecdc4',
+    borderWidth: 2,
+    borderColor: '#2a2a2a',
     borderRadius: 16,
-    padding: 4,
-    backgroundColor: 'rgba(78, 205, 196, 0.1)',
+    padding: 8,
+    backgroundColor: '#0b0b0b',
   },
   arrowBox: {
     position: 'absolute',
     top: 110,
     left: '42%',
     zIndex: 1,
-    backgroundColor: 'rgba(102, 126, 234, 0.1)',
-    padding: 16,
-    borderRadius: 25,
-    borderTopLeftRadius: 8,
-    borderBottomRightRadius: 8,
-    borderWidth: 6,
-    borderColor: '#ffd93d',
+    backgroundColor: 'rgba(102, 126, 234, 0.08)',
+    padding: 12,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#1f2937',
   },
   selectionLabel: {
     fontSize: 14,
     fontWeight: '500',
-    color: '#1e293b',
+    color: '#e5e7eb',
     marginBottom: 8,
   },
   searchSection: {
-    gap: 16,
+    gap: 12,
   },
   searchButtonsContainer: {
     gap: 12,
-    position: 'relative',
-    height: 180,
   },
   searchButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 12,
-    paddingHorizontal: 20,
+    paddingVertical: 14,
+    paddingHorizontal: 16,
     gap: 8,
+    borderRadius: 14,
   },
   primarySearchButton: {
-    backgroundColor: '#667eea',
-    borderRadius: 35,
-    borderTopLeftRadius: 5,
-    borderTopRightRadius: 25,
-    borderBottomLeftRadius: 15,
-    borderBottomRightRadius: 3,
-    paddingVertical: 28,
-    paddingHorizontal: 40,
-    paddingLeft: 24,
-    paddingRight: 50,
-    transform: [{ skewX: '-8deg' }, { rotate: '3deg' }],
-    minWidth: 220,
-    maxWidth: 280,
-    position: 'absolute',
-    top: -60,
-    left: 20,
-    borderWidth: 8,
-    borderColor: '#a78bfa',
+    backgroundColor: '#6366f1',
+    shadowColor: '#6366f1',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.25,
+    shadowRadius: 12,
+    elevation: 8,
   },
   secondarySearchButton: {
-    backgroundColor: 'white',
-    borderWidth: 8,
-    borderColor: '#10b981',
-    borderRadius: 12,
-    borderTopLeftRadius: 28,
-    borderTopRightRadius: 4,
-    borderBottomLeftRadius: 2,
-    borderBottomRightRadius: 20,
-    paddingVertical: 14,
-    paddingHorizontal: 26,
-    paddingTop: 8,
-    paddingBottom: 18,
-    transform: [{ rotate: '-4deg' }, { skewY: '2deg' }],
-    minWidth: 140,
-    maxWidth: 200,
-    position: 'absolute',
-    top: 60,
-    right: 15,
+    backgroundColor: '#0b1220',
+    borderWidth: 1,
+    borderColor: '#374151',
   },
   tertiarySearchButton: {
-    backgroundColor: 'white',
-    borderWidth: 8,
-    borderColor: '#f97316',
-    borderRadius: 12,
-    borderTopLeftRadius: 4,
-    borderTopRightRadius: 28,
-    borderBottomLeftRadius: 20,
-    borderBottomRightRadius: 2,
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    paddingTop: 6,
-    paddingBottom: 16,
-    transform: [{ rotate: '6deg' }, { skewX: '-1deg' }],
-    minWidth: 120,
-    maxWidth: 180,
-    position: 'absolute',
-    top: 120,
-    left: 25,
+    backgroundColor: 'transparent',
+    borderWidth: 0,
   },
   searchButtonText: {
     color: 'white',
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: '600',
   },
   secondarySearchButtonText: {
-    color: '#10b981',
+    color: '#e5e7eb',
     fontSize: 16,
     fontWeight: '600',
   },
   tertiarySearchButtonText: {
-    color: '#f97316',
-    fontSize: 14,
+    color: '#f59e0b',
+    fontSize: 16,
     fontWeight: '600',
   },
   customSearchContainer: {
-    backgroundColor: '#000000',
+    backgroundColor: '#0b0b0b',
     borderRadius: 16,
     padding: 20,
     gap: 16,
@@ -931,8 +871,8 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 8,
     elevation: 4,
-    borderWidth: 8,
-    borderColor: '#8b5cf6',
+    borderWidth: 1,
+    borderColor: '#1f2937',
   },
   customSearchLabel: {
     fontSize: 16,
@@ -940,15 +880,15 @@ const styles = StyleSheet.create({
     color: '#ffffff',
   },
   searchInput: {
-    borderWidth: 6,
-    borderColor: '#e2e8f0',
+    borderWidth: 1,
+    borderColor: '#1f2937',
     borderRadius: 12,
     paddingHorizontal: 16,
     paddingVertical: 12,
     fontSize: 16,
     color: '#ffffff',
     minHeight: 80,
-    backgroundColor: '#000000',
+    backgroundColor: '#0b0b0b',
   },
   customSearchButtons: {
     flexDirection: 'row',
@@ -971,41 +911,27 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 24,
-    paddingHorizontal: 36,
-    paddingLeft: 20,
-    paddingRight: 45,
-    paddingTop: 18,
-    paddingBottom: 28,
-    borderRadius: 40,
-    borderTopLeftRadius: 8,
-    borderTopRightRadius: 32,
-    borderBottomLeftRadius: 25,
-    borderBottomRightRadius: 6,
+    paddingVertical: 16,
+    paddingHorizontal: 20,
+    borderRadius: 16,
     marginVertical: 20,
     gap: 10,
     shadowColor: '#10b981',
     shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.4,
+    shadowOpacity: 0.25,
     shadowRadius: 12,
-    elevation: 10,
-    transform: [{ skewY: '-2deg' }, { rotate: '-4deg' }, { skewX: '3deg' }, { translateX: -25 }],
-    minWidth: 200,
-    maxWidth: 280,
+    elevation: 8,
     alignSelf: 'flex-start',
-    marginLeft: 30,
-    borderWidth: 8,
-    borderColor: '#34d399',
   },
   compareButtonDisabled: {
     backgroundColor: '#94a3b8',
-    shadowOpacity: 0,
+    shadowOpacity: 0.1,
     elevation: 0,
   },
   compareButtonText: {
     color: 'white',
-    fontSize: 18,
-    fontWeight: 'bold',
+    fontSize: 16,
+    fontWeight: '700',
   },
   selectedResultContainer: {
     marginBottom: 20,
@@ -1017,7 +943,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   termsSection: {
-    backgroundColor: '#000000',
+    backgroundColor: '#0b0b0b',
     borderRadius: 16,
     padding: 20,
     marginTop: 20,
@@ -1028,8 +954,8 @@ const styles = StyleSheet.create({
     elevation: 4,
     gap: 16,
     position: 'relative',
-    borderWidth: 8,
-    borderColor: '#ec4899',
+    borderWidth: 1,
+    borderColor: '#1f2937',
   },
   termsCheckboxContainer: {
     flexDirection: 'row',
@@ -1046,30 +972,19 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 16,
-    paddingHorizontal: 24,
-    paddingLeft: 14,
-    paddingRight: 30,
-    paddingTop: 12,
-    paddingBottom: 20,
-    backgroundColor: '#000000',
-    borderRadius: 22,
-    borderTopLeftRadius: 4,
-    borderTopRightRadius: 18,
-    borderBottomLeftRadius: 26,
-    borderBottomRightRadius: 2,
-    borderWidth: 8,
-    borderColor: '#06b6d4',
-    gap: 10,
-    transform: [{ rotate: '8deg' }, { skewX: '-2deg' }, { translateX: 15 }],
-    minWidth: 120,
-    maxWidth: 160,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    backgroundColor: '#0b1220',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#374151',
+    gap: 8,
     alignSelf: 'flex-end',
   },
   viewTermsText: {
     fontSize: 14,
     fontWeight: '500',
-    color: '#667eea',
+    color: '#e5e7eb',
   },
   copyrightSection: {
     alignItems: 'center',
@@ -1077,7 +992,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     marginTop: 20,
     borderTopWidth: 1,
-    borderTopColor: '#e2e8f0',
+    borderTopColor: '#1f2937',
   },
   copyrightText: {
     fontSize: 14,
@@ -1088,7 +1003,7 @@ const styles = StyleSheet.create({
   },
   copyrightSubtext: {
     fontSize: 12,
-    color: '#ffffff',
+    color: '#9ca3af',
     textAlign: 'center',
     lineHeight: 16,
   },
@@ -1107,11 +1022,11 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   resultCard: {
-    backgroundColor: '#000000',
+    backgroundColor: '#0b0b0b',
     borderRadius: 16,
     padding: 16,
-    borderWidth: 8,
-    borderColor: '#f97316',
+    borderWidth: 1,
+    borderColor: '#1f2937',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
@@ -1121,9 +1036,9 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   selectedCard: {
-    borderColor: '#a78bfa',
-    backgroundColor: '#333333',
-    borderWidth: 10,
+    borderColor: '#6366f1',
+    backgroundColor: '#101010',
+    borderWidth: 2,
   },
   cardHeader: {
     flexDirection: 'row',
@@ -1138,7 +1053,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   selectedBadge: {
-    backgroundColor: '#667eea',
+    backgroundColor: '#6366f1',
     borderRadius: 12,
     width: 24,
     height: 24,
@@ -1155,15 +1070,15 @@ const styles = StyleSheet.create({
     height: 160,
     borderRadius: 12,
     marginBottom: 12,
-    backgroundColor: '#f1f5f9',
+    backgroundColor: '#111827',
   },
   imagePlaceholder: {
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#2a2a2a',
+    backgroundColor: '#111827',
   },
   placeholderText: {
-    color: '#666',
+    color: '#9ca3af',
     fontSize: 14,
     marginTop: 8,
   },
@@ -1184,12 +1099,10 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   smallSearchButton: {
-    backgroundColor: '#667eea',
+    backgroundColor: '#6366f1',
     borderRadius: 12,
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    borderWidth: 6,
-    borderColor: '#a78bfa',
+    paddingVertical: 10,
+    paddingHorizontal: 14,
   },
   smallSearchButtonText: {
     color: 'white',
@@ -1198,24 +1111,22 @@ const styles = StyleSheet.create({
   },
   disabledSearchButton: {
     backgroundColor: '#374151',
-    borderColor: '#4b5563',
     opacity: 0.6,
   },
   disabledSearchButtonText: {
     color: '#9ca3af',
   },
   disabledSecondarySearchButton: {
-    backgroundColor: '#f3f4f6',
-    borderColor: '#d1d5db',
+    backgroundColor: '#0b1220',
+    borderColor: '#1f2937',
     opacity: 0.6,
+    borderWidth: 1,
   },
   disabledSecondarySearchButtonText: {
     color: '#9ca3af',
   },
   disabledTertiarySearchButton: {
-    backgroundColor: '#f3f4f6',
-    borderColor: '#d1d5db',
-    opacity: 0.6,
+    opacity: 0.5,
   },
   disabledTertiarySearchButtonText: {
     color: '#9ca3af',
